@@ -6,7 +6,9 @@
 	"scripts": {
 		"start": "node dist/src/server.js",
 		"dev": "nodemon src/server.ts",
-		"build": "tsc -p .",
+		"build": "npm run create-build && npm run copy-views",
+		"create-build": "tsc -p .",
+		"copy-views": "ts-node copyViews.ts",
 		"test": "jest --forceExit --coverage --verbose --maxWorkers=1"
 	},
 	"author": "",
@@ -16,12 +18,14 @@
 		"@types/jest": "^24.0.19",
 		"@types/jsonwebtoken": "^8.3.5",
 		"@types/mongoose": "^5.5.19",
+		"@types/shelljs": "^0.8.5",
 		"@types/supertest": "^2.0.8",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
 		"jsonwebtoken": "^8.5.1",
-		"mongoose": "^5.7.3"
+		"mongoose": "^5.7.3",
+		"shelljs": "^0.8.3"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.1",

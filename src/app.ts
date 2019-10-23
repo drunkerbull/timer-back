@@ -6,6 +6,7 @@ import userRouter from './routes/user';
 import taskRouter from './routes/task';
 import projectRouter from './routes/project';
 import cors from 'cors';
+
 dotenv.config();
 
 const path = require('path');
@@ -23,6 +24,7 @@ app.use(userRouter);
 app.use(taskRouter);
 app.use(projectRouter);
 
+app.use(express.static(__dirname + '/views'));
 
 
 app.get('**', function (req, res, next) {

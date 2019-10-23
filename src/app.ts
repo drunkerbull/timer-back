@@ -15,7 +15,6 @@ const db = DB.init(process.env.DB_USER, process.env.DB_PASS, process.env.DB_BASE
 const app: Application = express();
 app.use(cors());
 
-app.set('port', 5000);
 
 app.use(express.json());
 

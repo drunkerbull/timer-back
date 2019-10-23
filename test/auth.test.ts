@@ -11,19 +11,21 @@ beforeAll(() => {
 describe('AUTH', () => {
   it('should register user OK', async (done) => {
     const pack = {
-      name: 'testOK',
+      email: 'testOK',
+      nickname: 'nickname',
       pass: 'testpassOK'
     };
     const resRegister = await request(app)
       .post('/register')
       .send(pack);
-    expect(resRegister.body.name).toBe(pack.name);
+    expect(resRegister.body.email).toBe(pack.email);
     expect(resRegister.body.pass).toBe(pack.pass);
     done();
   });
   it('should register user exist NOT OK', async (done) => {
     const pack = {
-      name: 'testOK',
+      email: 'testOK',
+      nickname: 'nickname',
       pass: 'testpassOK'
     };
     const resRegisterExist = await request(app)
@@ -44,13 +46,13 @@ describe('AUTH', () => {
   });
   it('should login user OK', async (done) => {
     const pack = {
-      name: 'testOK',
+      email: 'testOK',
       pass: 'testpassOK'
     };
     const resLogin = await request(app)
       .post('/login')
       .send(pack);
-    expect(resLogin.body.user.name).toBe(pack.name);
+    expect(resLogin.body.user.email).toBe(pack.email);
     done();
   });
 });

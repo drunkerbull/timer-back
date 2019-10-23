@@ -22,17 +22,23 @@ describe('TASKS', () => {
   const bank: ITestTask = {project: null, user: null, task: null, token: ''};
   it('should register and login and create project OK', async (done) => {
     const packUser = {
-      name: 'testTaskOK',
+      email: 'testTaskOK',
+      nickname: 'testTasknickname',
+      pass: 'testpassTaskOK'
+    };
+    const packUserLogin = {
+      email: 'testTaskOK',
       pass: 'testpassTaskOK'
     };
     const packCreateProject = {
       name: 'testProjectTaskOK'
     };
     const resRegister = await request(app).post('/register').send(packUser);
-    expect(resRegister.body.name).toBe(packUser.name);
+    expect(resRegister.body.email).toBe(packUser.email);
 
-    const resLogin = await request(app).post('/login').send(packUser);
-    expect(resLogin.body.user.name).toBe(packUser.name);
+    const resLogin = await request(app).post('/login').send(packUserLogin);
+    expect(resLogin.body.user.nickname).toBe(packUser.nickname);
+    expect(resLogin.body.user.email).toBe(packUser.email);
     bank.token = resLogin.body.token;
     bank.user = resLogin.body.user;
 

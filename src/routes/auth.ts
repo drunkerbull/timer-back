@@ -5,7 +5,7 @@ import ErrorHandling from '../error-handling';
 const router = Router();
 router.post('/login', async (req: Request, res: Response) => {
   try {
-    if (!req.body.name || !req.body.pass) {
+    if (!req.body.email || !req.body.pass) {
       throw new Error('add all info');
     }
     const user: IUserDoc | null = await User.findByCredentials(req.body);
@@ -20,7 +20,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.body.name || !req.body.pass) {
+    if (!req.body.email || !req.body.nickname || !req.body.pass) {
       throw new Error('add all info');
     }
     const userCheck: IUserDoc | null = await User.findByCredentials(req.body);

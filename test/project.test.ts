@@ -21,15 +21,20 @@ describe('PROJECTS', () => {
 
   it('should register and login user OK', async (done) => {
     const packUser = {
-      name: 'testProjectOK',
+      email: 'testProjectOK',
+      nickname: 'testprojectnickname',
       pass: 'testpassProjectOK'
     };
-
+    const packUserLogin = {
+      email: 'testProjectOK',
+      pass: 'testpassProjectOK'
+    };
     const resRegister = await request(app).post('/register')
       .send(packUser);
     const resLogin = await request(app).post('/login')
-      .send(packUser);
-    expect(resLogin.body.user.name).toBe(packUser.name);
+      .send(packUserLogin);
+    expect(resLogin.body.user.email).toBe(packUser.email);
+    expect(resLogin.body.user.nickname).toBe(packUser.nickname);
     bank.user = resLogin.body.user;
     bank.token = resLogin.body.token;
     done();
@@ -77,7 +82,8 @@ describe('PROJECTS', () => {
   });
   it('should add worker to project OK', async (done) => {
     const packUserAdd = {
-      name: 'testOKTestAddWorker',
+      email: 'testOKTestAddWorker',
+      nickname: 'testoktestaddworkernickname',
       pass: 'testpassOKTestAddWorker'
     };
     const resProjectAddWorkerCreatedUser = await request(app).post('/register')
@@ -90,7 +96,7 @@ describe('PROJECTS', () => {
   });
   it('should delete worker to project OK', async (done) => {
     const packUserDelete = {
-      name: 'testOKTestAddWorker'
+      email: 'testOKTestAddWorker'
     };
     const resProjectDeleteWorker = await request(app).delete('/projects/' + bank.project!._id + '/worker')
       .send(packUserDelete).set('Authorization', 'Bearer ' + bank.token);

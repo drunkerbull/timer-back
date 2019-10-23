@@ -97,8 +97,8 @@ router.get('/projects/:id/tasks', auth, async (req: Request, res: Response) => {
 router.post('/projects/:id/worker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    if (!reqAuth.body.name) {
-      throw new Error('Not found name');
+    if (!reqAuth.body.email) {
+      throw new Error('Not found email');
     }
     if (!reqAuth.user) {
       throw new Error('Not authorization');
@@ -107,7 +107,7 @@ router.post('/projects/:id/worker', auth, async (req: Request, res: Response) =>
     if (!project) {
       throw new Error('Project not found');
     }
-    const user: IUserDoc | null = await User.findOne({name: reqAuth.body.name});
+    const user: IUserDoc | null = await User.findOne({email: reqAuth.body.email});
     if (!user) {
       throw new Error('User not found');
     }
@@ -121,8 +121,8 @@ router.post('/projects/:id/worker', auth, async (req: Request, res: Response) =>
 router.delete('/projects/:id/worker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    if (!reqAuth.body.name) {
-      throw new Error('Not found name');
+    if (!reqAuth.body.email) {
+      throw new Error('Not found email');
     }
     if (!reqAuth.user) {
       throw new Error('Not authorization');

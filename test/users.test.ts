@@ -18,15 +18,20 @@ describe('USERS', () => {
   let bank: ITestUser = {user: null, token: ''};
 
   it('should create user OK', async (done) => {
-    const pack = {
-      name: 'testOKUsers',
-      pass: 'testpassOKUsers'
+    const packUser = {
+      email: 'testUsersOK',
+      nickname: 'testUsersnickname',
+      pass: 'testpassUsersOK'
+    };
+    const packUserLogin = {
+      email: 'testUsersOK',
+      pass: 'testpassUsersOK'
     };
     const resUserCreate = await request(app)
       .post('/register')
-      .send(pack);
-    expect(resUserCreate.body.name).toBe(pack.name);
-    expect(resUserCreate.body.pass).toBe(pack.pass);
+      .send(packUser);
+    expect(resUserCreate.body.email).toBe(packUser.email);
+    expect(resUserCreate.body.pass).toBe(packUser.pass);
     bank.user = resUserCreate.body;
     done();
   });
@@ -43,12 +48,12 @@ describe('USERS', () => {
   });
   it('should put user OK', async (done) => {
     const packUser = {
-      name: 'testOKUsersAfterPUT',
+      email: 'testOKUsersAfterPUT',
       pass: 'testpassOKUsersAfterPUT'
     };
     const resUserUpdate = await request(app).put('/users/' + bank.user!._id)
       .send(packUser);
-    expect(resUserUpdate.body.name).toBe(packUser.name);
+    expect(resUserUpdate.body.email).toBe(packUser.email);
     expect(resUserUpdate.body.pass).toBe(packUser.pass);
     bank.user = resUserUpdate.body;
     done();

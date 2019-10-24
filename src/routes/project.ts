@@ -8,7 +8,7 @@ const router = Router();
 
 router.get('/projects', auth, async (req: Request, res: Response) => {
   try {
-    const project: IProjectDoc[] = await Project.find();
+    const project: IProjectDoc[] = await Project.find().populate('owner').exec();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
@@ -89,6 +89,7 @@ router.get('/projects/:id/tasks', auth, async (req: Request, res: Response) => {
       throw new Error('Project not found');
     }
     await project.populate('tasks').execPopulate();
+    await Project.populate(project.tasks, [{path: 'owner', model: 'User'}]);
     res.send(project.tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);

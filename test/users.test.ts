@@ -31,7 +31,6 @@ describe('USERS', () => {
       .post('/register')
       .send(packUser);
     expect(resUserCreate.body.email).toBe(packUser.email);
-    expect(resUserCreate.body.pass).toBe(packUser.pass);
     bank.user = resUserCreate.body;
     done();
   });
@@ -54,7 +53,6 @@ describe('USERS', () => {
     const resUserUpdate = await request(app).put('/users/' + bank.user!._id)
       .send(packUser);
     expect(resUserUpdate.body.email).toBe(packUser.email);
-    expect(resUserUpdate.body.pass).toBe(packUser.pass);
     bank.user = resUserUpdate.body;
     done();
   });

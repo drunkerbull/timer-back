@@ -48,6 +48,7 @@ router.get('/tasks/:id', auth, async (req: Request, res: Response) => {
     if (!task) {
       throw new Error('Task not found');
     }
+
     res.send(task);
   } catch (e) {
     ErrorHandling(e, res, 400);

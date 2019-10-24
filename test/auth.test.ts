@@ -19,7 +19,6 @@ describe('AUTH', () => {
       .post('/register')
       .send(pack);
     expect(resRegister.body.email).toBe(pack.email);
-    expect(resRegister.body.pass).toBe(pack.pass);
     done();
   });
   it('should register user exist NOT OK', async (done) => {

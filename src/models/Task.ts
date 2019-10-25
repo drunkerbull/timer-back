@@ -6,11 +6,8 @@ export interface ITask {
   name: string,
   owner: string,
   project: string,
-  timers: {
-    start: string,
-    end: string,
-    owner: string
-  }[]
+  total: number,
+  timerStarted: string
 }
 
 export interface ITaskDoc extends Document, ITask {
@@ -33,17 +30,14 @@ const TaskSchema: Schema = new mongoose.Schema({
     required: true,
     ref: 'Project'
   },
-  timers: [{
-    start: {
-      type: String
-    },
-    end: {
-      type: String
-    },
-    owner: {
-      type: String
-    }
-  }]
+  total: {
+    type: Number,
+    default: 0
+  },
+  timerStarted: {
+    type: String,
+    default: ''
+  }
 }, {
   timestamps: true
 });

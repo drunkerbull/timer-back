@@ -7,8 +7,11 @@ import User, {IUserDoc} from '../models/User';
 const router = Router();
 
 router.get('/projects', auth, async (req: Request, res: Response) => {
+  const reqAuth = req as RequestAuth;
   try {
-    const project: IProjectDoc[] = await Project.find().populate('owner').exec();
+    const project: IProjectDoc[] = await Project.find(
+      {'workers':{$in:[reqAuth.user._id]}}
+      ).populate('owner').exec();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
@@ -114,17 +117,14 @@ router.post('/projects/:id/worker', auth, async (req: Request, res: Response) =>
     }
     project.workers.push(user._id);
     await project.save();
-    res.send({message: 'Worker added to project'});
+    res.send(user);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/projects/:id/worker', auth, async (req: Request, res: Response) => {
+router.delete('/projects/:id/worker/:idworker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    if (!reqAuth.body.email) {
-      throw new Error('Not found email');
-    }
     if (!reqAuth.user) {
       throw new Error('Not authorization');
     }
@@ -132,13 +132,11 @@ router.delete('/projects/:id/worker', auth, async (req: Request, res: Response) 
     if (!project) {
       throw new Error('Project not found');
     }
-    const user: IUserDoc | null = await User.findOne(reqAuth.body);
+    const user: IUserDoc | null = await User.findById(reqAuth.params.idworker);
     if (!user) {
       throw new Error('User not found');
     }
-    project.workers = project.workers.filter((person) => {
-      return person !== user._id + '';
-    });
+    project.workers = project.workers.filter((person) => (person + '') !== (user._id + ''));
     await project.save();
     res.send({message: 'Worker deleted from project'});
   } catch (e) {

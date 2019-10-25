@@ -92,7 +92,7 @@ router.get('/api/projects/:id/tasks', auth, async (req: Request, res: Response) 
       throw new Error('Project not found');
     }
     await project.populate('tasks').execPopulate();
-    await Project.populate(project.tasks, [{path: 'owner', model: 'User'}]);
+    await Project.populate(project.tasks, [{path: 'owner', model: 'User'},{path: 'worker', model: 'User'}]);
     res.send(project.tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);

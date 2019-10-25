@@ -3,7 +3,6 @@ import ErrorHandling from '../error-handling';
 import Project, {IProjectDoc} from '../models/Project';
 import auth, {RequestAuth} from '../middleware/auth';
 import Task, {ITaskDoc} from '../models/Task';
-import moment from 'moment';
 
 const router = Router();
 

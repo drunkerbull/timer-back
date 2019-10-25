@@ -6,7 +6,7 @@ import User, {IUserDoc} from '../models/User';
 
 const router = Router();
 
-router.get('/projects', auth, async (req: Request, res: Response) => {
+router.get('/api/projects', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     const project: IProjectDoc[] = await Project.find(
@@ -17,7 +17,7 @@ router.get('/projects', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.post('/projects', auth, async (req: Request, res: Response) => {
+router.post('/api/projects', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     if (!reqAuth.body.name) {
@@ -45,7 +45,7 @@ router.post('/projects', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/projects/:id', auth, async (req: Request, res: Response) => {
+router.get('/api/projects/:id', auth, async (req: Request, res: Response) => {
   try {
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
@@ -58,7 +58,7 @@ router.get('/projects/:id', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.put('/projects/:id', auth, async (req: Request, res: Response) => {
+router.put('/api/projects/:id', auth, async (req: Request, res: Response) => {
   try {
     const project: IProjectDoc | null = await Project.findByIdAndUpdate(req.params.id, req.body, {new: true});
     if (!project) {
@@ -70,7 +70,7 @@ router.put('/projects/:id', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/projects/:id', auth, async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/api/projects/:id', auth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const project: IProjectDoc | null = await Project.findByIdAndDelete(req.params.id);
     if (!project) {
@@ -81,7 +81,7 @@ router.delete('/projects/:id', auth, async (req: Request, res: Response, next: N
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/projects/:id/tasks', auth, async (req: Request, res: Response) => {
+router.get('/api/projects/:id/tasks', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     if (!reqAuth.user) {
@@ -98,7 +98,7 @@ router.get('/projects/:id/tasks', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.post('/projects/:id/worker', auth, async (req: Request, res: Response) => {
+router.post('/api/projects/:id/worker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     if (!reqAuth.body.email) {
@@ -122,7 +122,7 @@ router.post('/projects/:id/worker', auth, async (req: Request, res: Response) =>
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/projects/:id/worker/:idworker', auth, async (req: Request, res: Response) => {
+router.delete('/api/projects/:id/worker/:idworker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     if (!reqAuth.user) {

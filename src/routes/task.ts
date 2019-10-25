@@ -7,7 +7,7 @@ import moment from 'moment';
 
 const router = Router();
 
-router.get('/tasks', auth, async (req: Request, res: Response) => {
+router.get('/api/tasks', auth, async (req: Request, res: Response) => {
   try {
     const task: ITaskDoc[] = await Task.find({});
     res.send(task);
@@ -15,7 +15,7 @@ router.get('/tasks', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.post('/tasks', auth, async (req: Request, res: Response) => {
+router.post('/api/tasks', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
     if (!reqAuth.body.name) {
@@ -43,7 +43,7 @@ router.post('/tasks', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/tasks/:id', auth, async (req: Request, res: Response) => {
+router.get('/api/tasks/:id', auth, async (req: Request, res: Response) => {
   try {
     const task: ITaskDoc | null = await Task.findById(req.params.id);
     if (!task) {
@@ -55,7 +55,7 @@ router.get('/tasks/:id', auth, async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.put('/tasks/:id', auth, async (req: Request, res: Response) => {
+router.put('/api/tasks/:id', auth, async (req: Request, res: Response) => {
   try {
     const task: ITaskDoc | null = await Task.findByIdAndUpdate(req.params.id, req.body, {new: true});
     if (!task) {
@@ -68,7 +68,7 @@ router.put('/tasks/:id', auth, async (req: Request, res: Response) => {
 });
 
 
-router.delete('/tasks/:id', auth, async (req: Request, res: Response) => {
+router.delete('/api/tasks/:id', auth, async (req: Request, res: Response) => {
   try {
     const task: ITaskDoc | null = await Task.findByIdAndDelete(req.params.id);
     if (!task) {

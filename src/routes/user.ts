@@ -4,7 +4,7 @@ import ErrorHandling from '../error-handling';
 
 const router = Router();
 
-router.get('/users', async (req: Request, res: Response) => {
+router.get('/api/users', async (req: Request, res: Response) => {
   try {
     const user: IUserDoc[] = await User.find({});
     res.send(user);
@@ -12,7 +12,7 @@ router.get('/users', async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/users/:id', async (req: Request, res: Response) => {
+router.get('/api/users/:id', async (req: Request, res: Response) => {
   try {
 
     const user: IUserDoc | null = await User.findById(req.params.id);
@@ -24,7 +24,7 @@ router.get('/users/:id', async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.put('/users/:id', async (req: Request, res: Response) => {
+router.put('/api/users/:id', async (req: Request, res: Response) => {
   try {
     const user: IUserDoc | null = await User.findByIdAndUpdate(req.params.id, req.body, {new: true});
     if (!user) {
@@ -35,7 +35,7 @@ router.put('/users/:id', async (req: Request, res: Response) => {
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/users/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/api/users/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user: IUserDoc | null = await User.findByIdAndDelete(req.params.id);
     if (!user) {

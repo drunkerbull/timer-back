@@ -1,17 +1,17 @@
 import mongoose, {Document, Model, model, Schema} from 'mongoose';
 
 export interface ITask {
-  _id: string,
-  __v: number,
   name: string,
-  owner: string,
+  worker:string,
   project: string,
   total: number,
   timerStarted: string
+
 }
 
 export interface ITaskDoc extends Document, ITask {
   _id: string,
+  owner: string
   __v: number,
 }
 

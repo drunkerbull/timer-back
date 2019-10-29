@@ -1,37 +1,40 @@
 import mongoose, {Document, Model, model, Schema} from 'mongoose';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import validator from 'validator';
 
 export interface IUser {
-  _id: string,
-  __v: number,
   email: string,
   nickname: string,
   pass: string,
-  tokens: {
-    token: string
-  }[],
 }
 
 export interface IUserDoc extends Document, IUser {
   _id: string,
   __v: number,
-
+  tokens: {
+    token: string
+  }[]
   generateAuthToken(): string;
 }
 
 const UserSchema: Schema = new mongoose.Schema({
   email: {
     type: String,
-    required: true
+    required: true,
+    validate(value: string) {
+      return validator.isEmail(value);
+    }
   },
   nickname: {
     type: String,
-    required: true
+    required: true,
+    minlength: 3
   },
   pass: {
     type: String,
-    required: true
+    required: true,
+    minlength: 8
   },
   tokens: [{
     token: {
@@ -58,6 +61,9 @@ UserSchema.methods.toJSON = function () {
   return userObject;
 };
 UserSchema.statics.findByCredentials = async (params: any): Promise<IUserDoc | null> => {
+  if (!validator.isEmail(params.email)) {
+    return null;
+  }
   const user: IUserDoc | null = await User.findOne({email: params.email});
   if (!user) {
     return null;

@@ -1,30 +1,35 @@
-import {NextFunction, Request, Response, Router} from 'express';
+import {Request, Response, Router} from 'express';
 import ErrorHandling from '../error-handling';
-import Project, {IProjectDoc} from '../models/Project';
+import Project, {IProject, IProjectDoc} from '../models/Project';
 import auth, {RequestAuth} from '../middleware/auth';
+import paramMongoId from '../middleware/paramMongoId';
 import User, {IUserDoc} from '../models/User';
+import validator from 'validator';
+
 
 const router = Router();
 
+
 router.get('/api/projects', auth, async (req: Request, res: Response) => {
-  const reqAuth = req as RequestAuth;
+  const reqPack = req as RequestAuth;
   try {
     const project: IProjectDoc[] = await Project.find(
-      {'workers':{$in:[reqAuth.user._id]}}
-      ).populate('owner').exec();
+      {
+        'workers': {$in: [reqPack.user._id]}
+      }
+    ).populate('owner').exec();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
+
+
 router.post('/api/projects', auth, async (req: Request, res: Response) => {
-  const reqAuth = req as RequestAuth;
+  const reqPack = req as RequestAuth<IProject>;
   try {
-    if (!reqAuth.body.name) {
+    if (!reqPack.body.name) {
       throw new Error('add all info');
-    }
-    if (!reqAuth.user) {
-      throw new Error('Not authorization');
     }
     const projectCheck: IProjectDoc | null = await Project.findByCredentials(req.body);
     if (projectCheck) {
@@ -32,86 +37,96 @@ router.post('/api/projects', auth, async (req: Request, res: Response) => {
     }
     const pack = {
       ...req.body,
-      owner: reqAuth.user._id,
-      workers: [reqAuth.user._id]
+      owner: reqPack.user._id,
+      workers: [reqPack.user._id]
     };
     const project: IProjectDoc = new Project(pack);
     await project.save();
-    await project.populate('owner').execPopulate();
-    await project.populate('workers').execPopulate();
-
+    await project.populate('owner workers').execPopulate();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/api/projects/:id', auth, async (req: Request, res: Response) => {
+router.get('/api/projects/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   try {
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
-    await project.populate('owner').execPopulate();
-    await project.populate('workers').execPopulate();
+    await project.populate('owner workers').execPopulate();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.put('/api/projects/:id', auth, async (req: Request, res: Response) => {
+router.put('/api/projects/:id', auth, paramMongoId, async (req: Request, res: Response) => {
+  const reqPack = req as RequestAuth<IProject>;
   try {
-    const project: IProjectDoc | null = await Project.findByIdAndUpdate(req.params.id, req.body, {new: true});
+    const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
-    await project.populate('owner').execPopulate();
+    if (project.owner.toString() !== reqPack.user._id.toString()) {
+      throw new Error('You are not owner of project');
+    }
+    project.name = reqPack.body.name;
+    await project.save();
+    await project.populate('owner workers').execPopulate();
     res.send(project);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/api/projects/:id', auth, async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/api/projects/:id', auth, paramMongoId, async (req: Request, res: Response) => {
+  const reqPack = req as RequestAuth;
   try {
-    const project: IProjectDoc | null = await Project.findByIdAndDelete(req.params.id);
+    const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
+    if (project.owner.toString() !== reqPack.user._id.toString()) {
+      throw new Error('You are not owner of project');
+    }
+    await project.remove();
     res.send({message: 'Project removed'});
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/api/projects/:id/tasks', auth, async (req: Request, res: Response) => {
-  const reqAuth = req as RequestAuth;
+router.get('/api/projects/:id/tasks', auth, paramMongoId, async (req: Request, res: Response) => {
   try {
-    if (!reqAuth.user) {
-      throw new Error('Not authorization');
-    }
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
     await project.populate('tasks').execPopulate();
-    await Project.populate(project.tasks, [{path: 'owner', model: 'User'},{path: 'worker', model: 'User'}]);
+    await Project.populate(project.tasks, [{path: 'owner', model: 'User'}, {path: 'worker', model: 'User'}]);
     res.send(project.tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
 });
-router.post('/api/projects/:id/worker', auth, async (req: Request, res: Response) => {
-  const reqAuth = req as RequestAuth;
+export interface IProjectWorker {
+  email: string
+}
+router.post('/api/projects/:id/worker', auth, paramMongoId, async (req: Request, res: Response) => {
+  const reqPack = req as RequestAuth<IProjectWorker>;
   try {
-    if (!reqAuth.body.email) {
+    if (!reqPack.body.email) {
       throw new Error('Not found email');
     }
-    if (!reqAuth.user) {
-      throw new Error('Not authorization');
+    if (!validator.isEmail(reqPack.body.email)) {
+      throw new Error('It is not email');
     }
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
-    const user: IUserDoc | null = await User.findOne({email: reqAuth.body.email});
+    if (project.owner.toString() !== reqPack.user._id.toString()) {
+      throw new Error('You are not owner of project');
+    }
+    const user: IUserDoc | null = await User.findOne({email: reqPack.body.email});
     if (!user) {
       throw new Error('User not found');
     }
@@ -122,21 +137,21 @@ router.post('/api/projects/:id/worker', auth, async (req: Request, res: Response
     ErrorHandling(e, res, 400);
   }
 });
-router.delete('/api/projects/:id/worker/:idworker', auth, async (req: Request, res: Response) => {
-  const reqAuth = req as RequestAuth;
+router.delete('/api/projects/:id/worker/:idworker', auth, paramMongoId, async (req: Request, res: Response) => {
+  const reqPack = req as RequestAuth;
   try {
-    if (!reqAuth.user) {
-      throw new Error('Not authorization');
-    }
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) {
       throw new Error('Project not found');
     }
-    const user: IUserDoc | null = await User.findById(reqAuth.params.idworker);
+    if (project.owner.toString() !== reqPack.user._id.toString()) {
+      throw new Error('You are not owner of project');
+    }
+    const user: IUserDoc | null = await User.findById(req.params.idworker);
     if (!user) {
       throw new Error('User not found');
     }
-    project.workers = project.workers.filter((person) => (person + '') !== (user._id + ''));
+    project.workers = project.workers.filter((person) => person.toString() !== user._id.toString());
     await project.save();
     res.send({message: 'Worker deleted from project'});
   } catch (e) {

@@ -9,24 +9,17 @@ const router = Router();
 router.get('/api/statistics', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    if (!reqAuth.user) {
-      throw new Error('Not authorization');
-    }
-    let options = {
+    let options:any = {
       'worker': reqAuth.user._id
     };
-    let average = req.query.average;
-    if (average) {
-      // @ts-ignore
+    if (req.query.average) {
       options.createdAt = {
-        '$gte': moment().subtract(1, average).startOf('day').toDate(),
+        '$gte': moment().subtract(1, req.query.average).startOf('day').toDate(),
         '$lt': moment().add(1, 'day').startOf('day').toDate()
       };
     }
-    console.log(options)
     const tasks: ITaskDoc[] = await Task.find(options)
-      .populate('worker')
-      .populate('owner').populate('project').exec();
+      .populate('worker owner project').exec();
     res.send(tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);

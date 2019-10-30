@@ -4,7 +4,7 @@ import {Response} from 'express';
 class ErrorHandling {
   constructor(error: Error, res: Response, status: number = 400) {
     // console.log('Console Error: ' + error.message)
-    res.status(status).send({error: 'Error: ' + error.message});
+    res.status(status).send({body: 'Error: ' + error.message});
   }
 }
 

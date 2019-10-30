@@ -4,6 +4,7 @@ import DB from '../src/db/mongoose';
 import {IProjectDoc} from '../src/models/Project';
 import {IUserDoc} from '../src/models/User';
 import {ITaskDoc} from '../src/models/Task';
+import moment from 'moment';
 
 beforeAll(() => {
   DB.currentMongoose.connection.on('connected', () => {
@@ -22,27 +23,27 @@ describe('TASKS', () => {
   const bank: ITestTask = {project: null, user: null, task: null, token: ''};
   it('should register and login and create project OK', async (done) => {
     const packUser = {
-      email: 'testTaskOK',
+      email: 'testTaskOK@gmail.com',
       nickname: 'testTasknickname',
-      pass: 'testpassTaskOK'
+      pass: '122333Qwe'
     };
     const packUserLogin = {
-      email: 'testTaskOK',
-      pass: 'testpassTaskOK'
+      email: 'testTaskOK@gmail.com',
+      pass: '122333Qwe'
     };
     const packCreateProject = {
       name: 'testProjectTaskOK'
     };
-    const resRegister = await request(app).post('/register').send(packUser);
+    const resRegister = await request(app).post('/api/register').send(packUser);
     expect(resRegister.body.email).toBe(packUser.email);
 
-    const resLogin = await request(app).post('/login').send(packUserLogin);
+    const resLogin = await request(app).post('/api/login').send(packUserLogin);
     expect(resLogin.body.user.nickname).toBe(packUser.nickname);
     expect(resLogin.body.user.email).toBe(packUser.email);
     bank.token = resLogin.body.token;
     bank.user = resLogin.body.user;
 
-    const resProjectCreate = await request(app).post('/projects')
+    const resProjectCreate = await request(app).post('/api/projects')
       .set('Authorization', 'Bearer ' + bank.token).send(packCreateProject);
     expect(resProjectCreate.body.name).toBe(packCreateProject.name);
     bank.project = resProjectCreate.body;
@@ -52,70 +53,39 @@ describe('TASKS', () => {
   it('should create task OK', async (done) => {
     const pack = {
       name: 'testTaskOKCreate',
-      project: bank.project!._id
+      project: bank.project!._id,
+      worker: bank.user!._id
     };
-    const resTaskCreate = await request(app).post('/tasks')
+    const resTaskCreate = await request(app).post('/api/tasks')
       .send(pack).set('Authorization', 'Bearer ' + bank.token);
     expect(resTaskCreate.body.name).toBe(pack.name);
     bank.task = resTaskCreate.body;
     done();
   });
-  it('should get all tasks OK', async (done) => {
-    const resProjectGetTasks = await request(app).get('/tasks')
-      .set('Authorization', 'Bearer ' + bank.token);
-    expect(resProjectGetTasks.body.length).toBeGreaterThanOrEqual(1);
-    expect(resProjectGetTasks.body[0]).toEqual(bank.task);
-    done();
-  });
-  it('should get task OK', async (done) => {
-    const resTaskGet = await request(app).get('/tasks/' + bank.task!._id)
-      .set('Authorization', 'Bearer ' + bank.token);
-    expect(resTaskGet.body).toEqual(bank.task!);
-    done();
-  });
-  it('should post timer in task OK', async (done) => {
-    const packTimer = {
-      start: '12:00',
-      end: '12:20',
-      owner: bank.user!._id
-    };
-    const resTimerPost = await request(app).post('/tasks/' + bank.task!._id + '/timer')
-      .set('Authorization', 'Bearer ' + bank.token).send(packTimer);
-    expect(resTimerPost.body.timers[0].start).toBe(packTimer.start);
-    done();
-  });
-  it('should put timer in task OK', async (done) => {
-    const packTimerUpdate = {
-      start: '14:44',
-      end: '16:23',
-      index: 0
-    };
-    const resTimerUpdate = await request(app).put('/tasks/' + bank.task!._id + '/timer')
-      .set('Authorization', 'Bearer ' + bank.token).send(packTimerUpdate);
-    expect(resTimerUpdate.body.timers[0].start).toBe(packTimerUpdate.start);
-    done();
-  });
-  it('should delete timer in task OK', async (done) => {
-    const packTimerDelete = {
-      index: 0
-    };
-    const resTimerDelete = await request(app).delete('/tasks/' + bank.task!._id + '/timer')
-      .set('Authorization', 'Bearer ' + bank.token).send(packTimerDelete);
-    expect(resTimerDelete.body.message).toBe('Timer removed');
-    done();
-  });
-  it('should put task OK', async (done) => {
+
+
+  it('should put task START TIMER OK', async (done) => {
     const packUpdateTask = {
-      name: 'testTaskOKUpdated'
+      timerStarted: moment().format()
     };
-    const resTaskCreate = await request(app).put('/tasks/' + bank.task!._id)
+    const resTaskTimerStart = await request(app).put('/api/tasks/' + bank.task!._id)
       .set('Authorization', 'Bearer ' + bank.token).send(packUpdateTask);
-    expect(resTaskCreate.body.name).toBe(packUpdateTask.name);
-    bank.task = resTaskCreate.body;
+    expect(resTaskTimerStart.body.timerStarted).toBe(packUpdateTask.timerStarted);
+    done();
+  });
+  it('should put task STOP TIMER OK', async (done) => {
+    const packUpdateTask = {
+      timerStarted: '',
+      total: 100
+    };
+    const resTaskTimerStop = await request(app).put('/api/tasks/' + bank.task!._id)
+      .set('Authorization', 'Bearer ' + bank.token).send(packUpdateTask);
+    expect(resTaskTimerStop.body.timerStarted).toBe(packUpdateTask.timerStarted);
+    expect(resTaskTimerStop.body.total).toBe(packUpdateTask.total);
     done();
   });
   it('should delete task OK', async (done) => {
-    const resProjectGetTasks = await request(app).delete('/tasks/' + bank.task!._id)
+    const resProjectGetTasks = await request(app).delete('/api/tasks/' + bank.task!._id)
       .set('Authorization', 'Bearer ' + bank.token);
     expect(resProjectGetTasks.body.message).toBe('Task removed');
     done();

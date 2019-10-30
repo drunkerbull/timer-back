@@ -2,17 +2,15 @@ import mongoose, {Document, Model, model, Schema} from 'mongoose';
 import {ITaskDoc} from './Task';
 
 export interface IProject {
-  _id: string,
-  __v: number,
-  name: string,
-  owner: string,
-  workers: string[];
-  tasks: ITaskDoc[]
+  name: string
 }
 
 export interface IProjectDoc extends Document, IProject {
   _id: string,
   __v: number,
+  owner: string,
+  workers: string[],
+  tasks: ITaskDoc[]
 }
 
 const ProjectSchema: Schema = new mongoose.Schema({

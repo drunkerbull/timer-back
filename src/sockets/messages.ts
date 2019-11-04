@@ -25,7 +25,8 @@ class Messages {
 
     this.socket.on('searchUsers', async (searchVal: any) => {
       try {
-        const users: IUserDoc[] = await User.find({$or: [{'name': searchVal}, {'nickname': searchVal}]});
+        console.log(searchVal)
+        const users: IUserDoc[] = await User.find({'email': new RegExp(searchVal, 'i')});
         console.log(users)
         this.socket.emit('onSearchUsers', users);
       } catch (e) {

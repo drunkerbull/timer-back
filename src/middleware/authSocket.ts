@@ -14,6 +14,8 @@ const authSocket = async(socket: any, next: any)=>{
       throw new Error('Not found User');
     }
     socket.user = user;
+    user.online = socket.id
+    await user.save()
     next();
   } catch (e) {
     console.log('socketerror',e);

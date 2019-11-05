@@ -7,6 +7,9 @@ import taskRouter from './routes/task';
 import statisticsRouter from './routes/statistics';
 import projectRouter from './routes/project';
 import cors from 'cors';
+import http from 'http';
+import authSocket from './middleware/authSocket';
+import messagesSockets from './sockets/messages';
 
 dotenv.config();
 
@@ -16,7 +19,18 @@ const db = DB.init(process.env.DB_USER, process.env.DB_PASS, process.env.DB_BASE
 const app: Application = express();
 app.use(cors());
 
-
+export const server = http.createServer(app);
+const io = require('socket.io')(server);
+io.use(authSocket);
+io.on('connection', (socket: any) => {
+  console.log('some connect', socket.user._id, socket.user.nickname);
+  messagesSockets(io,socket);
+  socket.on('disconnect', async() => {
+    socket.user.online = null
+    await socket.user.save()
+    console.log('some disconnect', socket.user._id, socket.user.nickname);
+  });
+});
 
 app.use(express.json());
 

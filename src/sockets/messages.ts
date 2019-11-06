@@ -10,7 +10,6 @@ class Messages {
     this.socket = socket;
     this.io = io;
     this.socket.on('rooms', async () => {
-      console.log('some call ROOMS');
       try {
         const rooms: IRoomDoc[] = await this.userRooms(this.socket.user._id);
         this.socket.emit('onRooms', rooms);
@@ -58,6 +57,7 @@ class Messages {
           if (user.online) {
             this.socket.to(user.online).emit('onRooms', await this.userRooms(user._id));
           }
+          this.joinToRoom(room!._id);
           await room.populate('group').execPopulate();
           this.socket.emit('onRoom', room);
         }
@@ -67,16 +67,15 @@ class Messages {
     });
 
 
-    this.socket.on('selectRoom', async (room: any) => {
+    this.socket.on('selectRoom', async ({_id}: any) => {
       try {
-        const currentRoom: IRoomDoc | null = await Room.findById(room._id);
-        if (!currentRoom) {
+        const room: IRoomDoc | null = await Room.findById(_id);
+        if (!room) {
           this.socket.emit('onRoom', {error: 'Not Found room'});
         }
-        await currentRoom!.populate('messages group').execPopulate();
-        Object.keys(this.socket.rooms).map((room: any) => this.socket.leave(room));
-        this.socket.join(currentRoom!._id);
-        this.socket.emit('onRoom', currentRoom);
+        await room!.populate('messages group').execPopulate();
+        this.joinToRoom(room!._id);
+        this.socket.emit('onRoom', room);
       } catch (e) {
         this.socket.emit('onRoom', {error: e});
 
@@ -94,10 +93,10 @@ class Messages {
         pack.owner = this.socket.user._id;
         const message: IMessageDoc = new Message(pack);
         await message.save();
+        await message.populate('owner').execPopulate();
         currentRoom.messages.push(message._id);
         await currentRoom.save();
         await currentRoom.populate('messages group').execPopulate();
-
         const users: IUserDoc[] = await this.usersWhoAreOnlineButNotInRoom(currentRoom);
         for (const user of users) {
           this.socket.to(user.online).emit('onNotiMessage', message);
@@ -109,6 +108,11 @@ class Messages {
       }
 
     });
+  }
+
+  joinToRoom(id: any) {
+    Object.keys(this.socket.rooms).map((room: any) => this.socket.leave(room));
+    this.socket.join(id);
   }
 
   async userRooms(id: string): Promise<IRoomDoc[]> {

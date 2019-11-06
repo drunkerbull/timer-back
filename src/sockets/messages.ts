@@ -69,11 +69,12 @@ class Messages {
 
     this.socket.on('selectRoom', async (room: any) => {
       try {
-        const currentRoom = await Room.findById(room._id);
+        const currentRoom: IRoomDoc | null = await Room.findById(room._id);
         if (!currentRoom) {
           this.socket.emit('onRoom', {error: 'Not Found room'});
         }
         await currentRoom!.populate('messages group').execPopulate();
+        Object.keys(this.socket.rooms).map((room: any) => this.socket.leave(room));
         this.socket.join(currentRoom!._id);
         this.socket.emit('onRoom', currentRoom);
       } catch (e) {
@@ -85,7 +86,7 @@ class Messages {
 
     this.socket.on('message', async (pack: any) => {
       try {
-        const currentRoom = await Room.findById(pack.room);
+        const currentRoom: IRoomDoc | null = await Room.findById(pack.room);
         if (!currentRoom) {
           throw new Error('Room not found');
         }
@@ -93,9 +94,15 @@ class Messages {
         pack.owner = this.socket.user._id;
         const message: IMessageDoc = new Message(pack);
         await message.save();
-        currentRoom!.messages.push(message._id);
-        await currentRoom!.save();
-        await currentRoom!.populate('messages group').execPopulate();
+        currentRoom.messages.push(message._id);
+        await currentRoom.save();
+        await currentRoom.populate('messages group').execPopulate();
+
+        const users: IUserDoc[] = await this.usersWhoAreOnlineButNotInRoom(currentRoom);
+        for (const user of users) {
+          this.socket.to(user.online).emit('onNotiMessage', message);
+        }
+
         this.socket.to(pack.room._id).emit('onRoom', currentRoom);
       } catch (e) {
         this.socket.emit('onRoom', {error: e});
@@ -104,10 +111,21 @@ class Messages {
     });
   }
 
-  async userRooms(id: string) {
+  async userRooms(id: string): Promise<IRoomDoc[]> {
     return await Room.find({'group': {$in: [id]}})
       .populate('group').exec();
   }
+
+  async usersWhoAreOnlineButNotInRoom(room: IRoomDoc): Promise<IUserDoc[]> {
+    return new Promise((res, rej) => {
+      this.io.in(room._id).clients((err: any, clients: any) => {
+        if (err) return rej('error usersWhoAreOnlineButNotInRoom');
+        const users: any = room.group.filter((o1: any) => clients.filter((o2: any) => o1.online && o1.online !== o2).length !== 0);
+        res(users);
+      });
+    });
+  }
+
 }
 
 const messagesSockets = (io: any, socket: any) => new Messages(io, socket);

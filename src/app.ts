@@ -24,10 +24,12 @@ const io = require('socket.io')(server);
 io.use(authSocket);
 io.on('connection', (socket: any) => {
   console.log('some connect', socket.user._id, socket.user.nickname);
+
   messagesSockets(io,socket);
-  socket.on('disconnect', async() => {
-    socket.user.online = null
-    await socket.user.save()
+
+  socket.on('disconnect', async () => {
+    socket.user.online = null;
+    await socket.user.save();
     console.log('some disconnect', socket.user._id, socket.user.nickname);
   });
 });

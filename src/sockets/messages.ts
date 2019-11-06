@@ -9,6 +9,7 @@ class Messages {
   constructor(io: any, socket: any) {
     this.socket = socket;
     this.io = io;
+
     this.socket.on('rooms', async () => {
       try {
         const rooms: IRoomDoc[] = await this.userRooms(this.socket.user._id);
@@ -82,7 +83,9 @@ class Messages {
       }
 
     });
-
+    this.socket.on('leaveAllRoom', () => {
+      this.leaveAllRooms();
+    });
     this.socket.on('message', async (pack: any) => {
       try {
         const currentRoom: IRoomDoc | null = await Room.findById(pack.room);
@@ -97,9 +100,9 @@ class Messages {
         currentRoom.messages.push(message._id);
         await currentRoom.save();
         await currentRoom.populate('messages group').execPopulate();
-        const users: IUserDoc[] = await this.usersWhoAreOnlineButNotInRoom(currentRoom);
+        const users: string[] = await this.usersWhoAreOnlineButNotInRoom(currentRoom);
         for (const user of users) {
-          this.socket.to(user.online).emit('onNotiMessage', message);
+          this.socket.to(user).emit('onNotiMessage', message);
         }
 
         this.socket.to(pack.room._id).emit('onRoom', currentRoom);
@@ -110,8 +113,19 @@ class Messages {
     });
   }
 
+  leaveAllRooms() {
+    let rooms = Object.keys(this.socket.rooms);
+
+    rooms.shift(); // first room is default for socketio
+    if (rooms.length) {
+      rooms.map((room: any) => {
+        this.socket.leave(room);
+      });
+    }
+  }
+
   joinToRoom(id: any) {
-    Object.keys(this.socket.rooms).map((room: any) => this.socket.leave(room));
+    this.leaveAllRooms();
     this.socket.join(id);
   }
 
@@ -120,12 +134,13 @@ class Messages {
       .populate('group').exec();
   }
 
-  async usersWhoAreOnlineButNotInRoom(room: IRoomDoc): Promise<IUserDoc[]> {
+  async usersWhoAreOnlineButNotInRoom(room: IRoomDoc): Promise<string[]> {
     return new Promise((res, rej) => {
       this.io.in(room._id).clients((err: any, clients: any) => {
         if (err) return rej('error usersWhoAreOnlineButNotInRoom');
-        const users: any = room.group.filter((o1: any) => clients.filter((o2: any) => o1.online && o1.online !== o2).length !== 0);
-        res(users);
+        const clientsInGroup = room.group.map((el: any) => el.online);
+        const result: string[] = clientsInGroup.filter(person => !clients.includes(person));
+        res(result);
       });
     });
   }

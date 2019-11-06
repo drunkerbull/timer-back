@@ -7,6 +7,7 @@ export interface IUser {
   email: string,
   nickname: string,
   pass: string,
+  online: string
 }
 
 export interface IUserDoc extends Document, IUser {
@@ -15,6 +16,7 @@ export interface IUserDoc extends Document, IUser {
   tokens: {
     token: string
   }[]
+
   generateAuthToken(): string;
 }
 
@@ -35,6 +37,10 @@ const UserSchema: Schema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8
+  },
+  online: {
+    type: String,
+    default: null
   },
   tokens: [{
     token: {

@@ -1,6 +1,8 @@
-import app from './app';
+import {server} from './app';
 
-const server = app.listen(process.env.PORT || 5000, () => {
+server.listen(process.env.PORT || 5000, () => {
   console.log('server run');
 });
+
+
 export default server;

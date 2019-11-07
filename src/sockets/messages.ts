@@ -50,6 +50,7 @@ class Messages {
             name: '',
             owner: this.socket.user._id,
             group: [this.socket.user._id, user!._id],
+            read: [this.socket.user._id],
             messages: []
           };
           const room: IRoomDoc = new Room(pack);
@@ -74,6 +75,11 @@ class Messages {
         if (!room) {
           this.socket.emit('onRoom', {error: 'Not Found room'});
         }
+        const readExist = room!.read.filter(el => el === this.socket.user._id);
+        if (!readExist.length) {
+          room!.read.push(this.socket.user._id);
+        }
+        await room!.save();
         await room!.populate('messages group').execPopulate();
         this.joinToRoom(room!._id);
         this.socket.emit('onRoom', room);
@@ -98,13 +104,14 @@ class Messages {
         await message.save();
         await message.populate('owner').execPopulate();
         currentRoom.messages.push(message._id);
-        await currentRoom.save();
-        await currentRoom.populate('messages group').execPopulate();
-        const users: string[] = await this.usersWhoAreOnlineButNotInRoom(currentRoom);
-        for (const user of users) {
-          this.socket.to(user).emit('onNotiMessage', message);
-        }
 
+        await currentRoom.populate('messages group').execPopulate();
+        const users = await this.usersWhoAreOnlineFromGroupRoom(currentRoom);
+        for (const user of users.notInRoom) {
+          this.socket.to(user.online).emit('onNotiMessage', message);
+        }
+        currentRoom.read = users.inRoom;
+        await currentRoom.save();
         this.socket.to(pack.room._id).emit('onRoom', currentRoom);
       } catch (e) {
         this.socket.emit('onRoom', {error: e});
@@ -134,13 +141,20 @@ class Messages {
       .populate('group').exec();
   }
 
-  async usersWhoAreOnlineButNotInRoom(room: IRoomDoc): Promise<string[]> {
+  async usersWhoAreOnlineFromGroupRoom(room: IRoomDoc): Promise<any> {
     return new Promise((res, rej) => {
       this.io.in(room._id).clients((err: any, clients: any) => {
         if (err) return rej('error usersWhoAreOnlineButNotInRoom');
-        const clientsInGroup = room.group.map((el: any) => el.online);
-        const result: string[] = clientsInGroup.filter(person => !clients.includes(person));
-        res(result);
+        let inRoom: any[] = [];
+        let notInRoom: any[] = [];
+        room.group.map((person:any) => {
+          if (!clients.includes(person.online)) {
+            notInRoom.push(person);
+          } else {
+            inRoom.push(person);
+          }
+        });
+        res({inRoom, notInRoom});
       });
     });
   }

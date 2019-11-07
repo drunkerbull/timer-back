@@ -9,7 +9,8 @@ export interface IRoomDoc extends Document, IRoom {
   __v: number,
   owner: string,
   group: string[],
-  messages:string[]
+  read: string[],
+  messages: string[]
 }
 
 const RoomSchema: Schema = new mongoose.Schema({
@@ -28,6 +29,10 @@ const RoomSchema: Schema = new mongoose.Schema({
   messages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message'
+  }],
+  read: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }]
 }, {
   timestamps: true

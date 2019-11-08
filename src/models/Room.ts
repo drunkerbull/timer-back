@@ -1,16 +1,17 @@
 import mongoose, {Document, Model, model, Schema} from 'mongoose';
+import {IUserDoc} from './User';
 
 export interface IRoom {
   name: string
 }
 
 export interface IRoomDoc extends Document, IRoom {
-  _id: string,
+  _id: mongoose.Schema.Types.ObjectId,
   __v: number,
-  owner: string,
-  group: string[],
-  read: string[],
-  messages: string[]
+  owner: mongoose.Schema.Types.ObjectId,
+  group: IUserDoc[],
+  read: mongoose.Schema.Types.ObjectId[],
+  messages: mongoose.Schema.Types.ObjectId[]
 }
 
 const RoomSchema: Schema = new mongoose.Schema({

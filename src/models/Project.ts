@@ -6,10 +6,10 @@ export interface IProject {
 }
 
 export interface IProjectDoc extends Document, IProject {
-  _id: string,
+  _id: mongoose.Schema.Types.ObjectId,
   __v: number,
-  owner: string,
-  workers: string[],
+  owner: mongoose.Schema.Types.ObjectId,
+  workers: mongoose.Schema.Types.ObjectId[],
   tasks: ITaskDoc[]
 }
 

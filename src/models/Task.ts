@@ -10,8 +10,8 @@ export interface ITask {
 }
 
 export interface ITaskDoc extends Document, ITask {
-  _id: string,
-  owner: string
+  _id: mongoose.Schema.Types.ObjectId,
+  owner: mongoose.Schema.Types.ObjectId
   __v: number,
 }
 

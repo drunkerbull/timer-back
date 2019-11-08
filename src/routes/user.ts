@@ -6,11 +6,6 @@ import auth from '../middleware/auth';
 
 const router = Router();
 
-async function findUserById(id: string): Promise<IUserDoc> {
-  const user: IUserDoc | null = await User.findById(id);
-  if (!user) throw new Error('User not found');
-  return user;
-}
 
 router.get('/api/users', async (req: Request, res: Response) => {
   try {
@@ -22,7 +17,7 @@ router.get('/api/users', async (req: Request, res: Response) => {
 });
 router.get('/api/users/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   try {
-    const user: IUserDoc = await findUserById(req.params.id);
+    const user: IUserDoc = await User.findUserById(req.params.id);
     res.send(user);
   } catch (e) {
     ErrorHandling(e, res, 400);
@@ -30,7 +25,7 @@ router.get('/api/users/:id', auth, paramMongoId, async (req: Request, res: Respo
 });
 router.put('/api/users/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   try {
-    const user: IUserDoc = await findUserById(req.params.id);
+    const user: IUserDoc = await User.findUserById(req.params.id);
 
     Object.assign(user, req.body);
     await user.save();
@@ -42,8 +37,7 @@ router.put('/api/users/:id', auth, paramMongoId, async (req: Request, res: Respo
 });
 router.delete('/api/users/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   try {
-    const user: IUserDoc = await findUserById(req.params.id);
-
+    const user: IUserDoc = await User.findUserById(req.params.id);
     await user.remove();
     res.send({message: 'User removed'});
   } catch (e) {

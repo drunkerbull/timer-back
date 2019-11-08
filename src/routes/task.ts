@@ -20,29 +20,25 @@ router.post('/api/tasks', auth, async (req: Request, res: Response) => {
     const owner: mongoose.Schema.Types.ObjectId | undefined = project.workers.find((id) => id.toString() === reqAuth.user._id.toString());
     if (!owner) throw new Error('You are not working in this project');
 
-    const taskCheck: ITaskDoc | null = await Task.findByCredentials({name: req.body.name});
-    if (taskCheck) throw new Error('Task exist');
+    const task: ITaskDoc | null = await Task.findByCredentials({name: req.body.name});
+    if (task) throw new Error('Task exist');
 
     const pack = {...req.body, owner};
-    const task: ITaskDoc = new Task(pack);
-    await task.save();
-    res.send(task);
+    const newTask: ITaskDoc = new Task(pack);
+    await newTask.save();
+
+    res.send(newTask);
   } catch (e) {ErrorHandling(e, res, 400)}
 });
 
 router.put('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<ITask>;
   try {
-    const task: ITaskDoc | null = await Task.findById(req.params.id);
-    if (!task) throw new Error('Task not found');
-
-    if (task.owner.toString() !== reqAuth.user._id.toString()
-      || task.worker.toString() !== reqAuth.user._id.toString()) throw new Error('You are not working in this task');
-
+    const task: ITaskDoc = await Task.findTaskById(reqAuth);
     task.timerStarted = reqAuth.body.timerStarted;
     if (reqAuth.body.total) task.total = reqAuth.body.total;
-
     await task.save();
+
     res.send(task);
   } catch (e) {ErrorHandling(e, res, 400)}
 });
@@ -51,15 +47,12 @@ router.put('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Respo
 router.delete('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    const task: ITaskDoc | null = await Task.findById(req.params.id);
-    if (!task) throw new Error('Task not found');
-
-    if (task.owner.toString() !== reqAuth.user._id.toString()
-      || task.worker.toString() !== reqAuth.user._id.toString()) throw new Error('You are not working in this task');
-
+    const task: ITaskDoc = await Task.findTaskById(reqAuth);
     await task.remove();
+
     res.send({message: 'Task removed'});
   } catch (e) {ErrorHandling(e, res, 400)}
 });
+
 
 export default router;

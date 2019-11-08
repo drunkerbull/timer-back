@@ -31,8 +31,7 @@ class Messages {
 
     this.socket.on('selectOrCreateRoom', async (userTo: IUserDoc) => {
       try {
-        const user: IUserDoc | null = await User.findById(userTo._id);
-        if (!user) throw new Error('UserTo not found');
+        const user: IUserDoc | null = await User.findUserById(userTo._id);
 
         const room: IRoomDoc | null = await Room.findOne({
           $and: [{'group': user._id}, {'group': this.socket.user._id}]
@@ -101,7 +100,7 @@ class Messages {
 
   joinToRoom(id: mongoose.Schema.Types.ObjectId) {
     this.leaveAllRooms();
-    this.socket.join(id); 
+    this.socket.join(id);
   }
 
   async userRooms(id: mongoose.Schema.Types.ObjectId): Promise<IRoomDoc[]> {

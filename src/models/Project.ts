@@ -1,5 +1,7 @@
 import mongoose, {Document, Model, model, Schema} from 'mongoose';
 import {ITaskDoc} from './Task';
+import {RequestAuth} from '../middleware/auth';
+import {IProjectWorker} from '../routes/project';
 
 export interface IProject {
   name: string
@@ -44,9 +46,15 @@ ProjectSchema.statics.findByCredentials = async (params: any): Promise<IProjectD
   }
   return project;
 };
-
+ProjectSchema.statics.findProjectById = async (reqPack: RequestAuth<IProjectWorker>): Promise<IProjectDoc> => {
+  const project: IProjectDoc | null = await Project.findById(reqPack.params.id);
+  if (!project) throw new Error('Project not found');
+  if (project.owner.toString() !== reqPack.user._id.toString()) throw new Error('You are not owner of project');
+  return project
+};
 export interface IProjectModel extends Model<IProjectDoc> {
   findByCredentials(params: any): Promise<IProjectDoc>
+  findProjectById(reqPack: any): Promise<IProjectDoc>
 }
 
 const Project: IProjectModel = model<IProjectDoc, IProjectModel>('Project', ProjectSchema);

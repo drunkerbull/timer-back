@@ -37,7 +37,7 @@ router.post('/api/register', async (req: Request, res: Response) => {
 
     const newUser: IUserDoc = new User(reqPack);
     await newUser.save();
-    res.send(user);
+    res.send(newUser);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }

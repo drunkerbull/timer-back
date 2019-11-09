@@ -11,7 +11,7 @@ export interface IUser {
 }
 
 export interface IUserDoc extends Document, IUser {
-  _id: string,
+  _id: mongoose.Schema.Types.ObjectId,
   __v: number,
   tokens: {
     token: string
@@ -80,7 +80,11 @@ UserSchema.statics.findByCredentials = async (params: any): Promise<IUserDoc | n
   }
   return user;
 };
-
+UserSchema.statics.findUserById = async (id: mongoose.Schema.Types.ObjectId|string): Promise<IUserDoc> => {
+  const user: IUserDoc | null = await User.findById(id);
+  if (!user) throw new Error('User not found');
+  return user;
+};
 UserSchema.pre('save', async function (next) {
   const user = this;
 
@@ -92,6 +96,7 @@ UserSchema.pre('save', async function (next) {
 
 export interface IUserModel extends Model<IUserDoc> {
   findByCredentials(params: any): Promise<IUserDoc>
+  findUserById(id: mongoose.Schema.Types.ObjectId|string): Promise<IUserDoc>
 }
 
 const User: IUserModel = model<IUserDoc, IUserModel>('User', UserSchema);

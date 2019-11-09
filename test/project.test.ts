@@ -96,7 +96,8 @@ describe('PROJECTS', () => {
     done();
   });
   it('should delete worker to project OK', async (done) => {
-    const resProjectDeleteWorker = await request(app).delete('/api/projects/' + bank.project!._id + '/worker/' + bank.worker!._id)
+    const resProjectDeleteWorker = await request(app).delete('/api/projects/'
+      + bank.project!._id + '/worker/' + bank.worker!._id)
       .set('Authorization', 'Bearer ' + bank.token);
     expect(resProjectDeleteWorker.body.message).toBe('Worker deleted from project');
     done();

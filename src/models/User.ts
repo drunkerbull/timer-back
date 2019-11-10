@@ -13,9 +13,13 @@ export interface IUser {
 export interface IUserDoc extends Document, IUser {
   _id: mongoose.Schema.Types.ObjectId,
   __v: number,
+  name: string,
+  surname: string,
   tokens: {
     token: string
   }[]
+
+  checkPass(pass: string): boolean;
 
   generateAuthToken(): string;
 }
@@ -32,6 +36,14 @@ const UserSchema: Schema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 3
+  },
+  name: {
+    type: String,
+    default: '',
+  },
+  surname: {
+    type: String,
+    default: '',
   },
   pass: {
     type: String,
@@ -58,6 +70,15 @@ UserSchema.methods.generateAuthToken = async function (): Promise<string> {
   await user.save();
   return token;
 };
+UserSchema.methods.checkPass = async function (currentPass: string) {
+  const user = this;
+  const userObject = user.toObject();
+  const isMatch = await bcrypt.compare(currentPass, userObject.pass);
+  if (!isMatch) {
+    throw new Error('Invalid password data');
+  }
+  return isMatch;
+};
 UserSchema.methods.toJSON = function () {
   const user = this;
   const userObject = user.toObject();
@@ -80,7 +101,7 @@ UserSchema.statics.findByCredentials = async (params: any): Promise<IUserDoc | n
   }
   return user;
 };
-UserSchema.statics.findUserById = async (id: mongoose.Schema.Types.ObjectId|string): Promise<IUserDoc> => {
+UserSchema.statics.findUserById = async (id: mongoose.Schema.Types.ObjectId | string): Promise<IUserDoc> => {
   const user: IUserDoc | null = await User.findById(id);
   if (!user) throw new Error('User not found');
   return user;
@@ -96,7 +117,9 @@ UserSchema.pre('save', async function (next) {
 
 export interface IUserModel extends Model<IUserDoc> {
   findByCredentials(params: any): Promise<IUserDoc>
-  findUserById(id: mongoose.Schema.Types.ObjectId|string): Promise<IUserDoc>
+
+
+  findUserById(id: mongoose.Schema.Types.ObjectId | string): Promise<IUserDoc>
 }
 
 const User: IUserModel = model<IUserDoc, IUserModel>('User', UserSchema);

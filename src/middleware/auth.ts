@@ -15,9 +15,13 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
       throw new Error('Not found JWT token');
     }
+
     const formattedToken: string = token.replace('Bearer ', '');
+
     const decoded: any = jwt.verify(formattedToken, 'thisissecret');
+
     const user: IUserDoc | null = await User.findOne({_id: decoded._id, 'tokens.token': formattedToken});
+
     if (!user) {
       throw new Error('Not found User');
     }

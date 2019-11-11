@@ -7,7 +7,8 @@ export interface IUser {
   email: string,
   nickname: string,
   pass: string,
-  online: string
+  online: string,
+  avatar?:any,
 }
 
 export interface IUserDoc extends Document, IUser {
@@ -15,6 +16,7 @@ export interface IUserDoc extends Document, IUser {
   __v: number,
   name: string,
   surname: string,
+
   tokens: {
     token: string
   }[]
@@ -54,6 +56,9 @@ const UserSchema: Schema = new mongoose.Schema({
     type: String,
     default: null
   },
+  avatar:{
+    type: Buffer
+  },
   tokens: [{
     token: {
       type: String,
@@ -84,6 +89,7 @@ UserSchema.methods.toJSON = function () {
   const userObject = user.toObject();
   delete userObject.pass;
   delete userObject.tokens;
+  delete userObject.avatar;
 
   return userObject;
 };

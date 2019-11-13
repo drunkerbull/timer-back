@@ -8,7 +8,8 @@ export interface IUser {
   nickname: string,
   pass: string,
   online: string,
-  avatar?:any,
+  avatar?: any,
+  haveAvatar: boolean
 }
 
 export interface IUserDoc extends Document, IUser {
@@ -56,7 +57,11 @@ const UserSchema: Schema = new mongoose.Schema({
     type: String,
     default: null
   },
-  avatar:{
+  haveAvatar: {
+    type: Boolean,
+    default: false
+  },
+  avatar: {
     type: Buffer
   },
   tokens: [{

@@ -19,8 +19,7 @@ router.get('/api/users', async (req: Request, res: Response) => {
 router.get('/api/users/me', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
-    res.send(user);
+    res.send(reqAuth.user);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
@@ -33,11 +32,10 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
   try {
     if (!isValidOperation) throw new Error('Invalid data');
 
-    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
-    Object.assign(user, reqAuth.body);
-    await user.save();
+    Object.assign(reqAuth.user, reqAuth.body);
+    await reqAuth.user.save();
 
-    res.send(user);
+    res.send(reqAuth.user);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
@@ -46,12 +44,13 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
 router.post('/api/users/me/timer', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<ITaskDoc>;
   try {
-    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
     const task: ITaskDoc | null = await Task.findById(reqAuth.body._id);
-    user.currentTimer = task!.timerStarted ? task!._id : null;
-    await user.populate('currentTimer').execPopulate();
-    await user.save();
-    res.send(user);
+    reqAuth.user.currentTimer = task!.timerStarted ? task!._id : null;
+    if (reqAuth.user.currentTimer) {
+      await reqAuth.user.populate('currentTimer').execPopulate();
+    }
+    await reqAuth.user.save();
+    res.send(reqAuth.user);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
@@ -65,12 +64,11 @@ router.put('/api/users/me/pass', auth, async (req: Request, res: Response) => {
     if (!isValidOperation) throw new Error('Invalid data');
     if (reqAuth.body.newPass !== reqAuth.body.repeatNewPass) throw new Error('Passwords do not match. New and Repeat');
 
-    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
-    await user.checkPass(reqAuth.body.currentPass);
-    user.pass = reqAuth.body.newPass;
-    await user.save();
+    await reqAuth.user.checkPass(reqAuth.body.currentPass);
+    reqAuth.user.pass = reqAuth.body.newPass;
+    await reqAuth.user.save();
 
-    res.send(user);
+    res.send(reqAuth.user);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }
@@ -79,8 +77,7 @@ router.put('/api/users/me/pass', auth, async (req: Request, res: Response) => {
 router.delete('/api/users/me', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<IUser>;
   try {
-    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
-    await user.remove();
+    await reqAuth.user.remove();
     res.send({message: 'User removed'});
   } catch (e) {
     ErrorHandling(e, res, 400);
@@ -100,6 +97,9 @@ router.post('/api/users/me/avatar', auth, uploadAvatar.single('avatar'), async (
     const buffer = await sharp(req.file.path).resize(300, 300).png().toBuffer();
     reqAuth.user.avatar = buffer;
     await reqAuth.user.save();
+    if (reqAuth.user.currentTimer) {
+      await reqAuth.user.populate('currentTimer').execPopulate();
+    }
     res.send();
   } catch (e) {
     ErrorHandling(e, res, 400);

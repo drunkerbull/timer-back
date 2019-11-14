@@ -25,6 +25,9 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
     if (!user) {
       throw new Error('Not found User');
     }
+    if (user.currentTimer) {
+      await user.populate('currentTimer').execPopulate();
+    }
     reqAuth.user = user;
     next();
   } catch (e) {

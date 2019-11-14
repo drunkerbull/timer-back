@@ -58,7 +58,7 @@ TaskSchema.statics.findTaskById = async (reqAuth: any): Promise<ITaskDoc> => {
   const task: ITaskDoc | null = await Task.findById(reqAuth.params.id);
   if (!task) throw new Error('Task not found');
   if (task.owner.toString() !== reqAuth.user._id.toString()
-    || task.worker.toString() !== reqAuth.user._id.toString()) {
+    && task.worker.toString() !== reqAuth.user._id.toString()) {
     throw new Error('You are not working in this task');
   }
   return task;

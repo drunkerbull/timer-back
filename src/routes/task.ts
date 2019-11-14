@@ -52,6 +52,9 @@ router.delete('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Re
   const reqAuth = req as RequestAuth;
   try {
     const task: ITaskDoc = await Task.findTaskById(reqAuth);
+    if(task.timerStarted){
+      throw new Error('You cant delete task if timer started');
+    }
     await task.remove();
 
     res.send({message: 'Task removed'});

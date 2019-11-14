@@ -4,6 +4,7 @@ import ErrorHandling from '../error-handling';
 import auth, {RequestAuth} from '../middleware/auth';
 import multer from 'multer';
 import sharp from 'sharp';
+import Task, {ITaskDoc} from '../models/Task';
 
 const router = Router();
 
@@ -36,6 +37,20 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
     Object.assign(user, reqAuth.body);
     await user.save();
 
+    res.send(user);
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
+});
+
+router.post('/api/users/me/timer', auth, async (req: Request, res: Response) => {
+  const reqAuth = req as RequestAuth<ITaskDoc>;
+  try {
+    const user: IUserDoc = await User.findUserById(reqAuth.user._id);
+    const task: ITaskDoc | null = await Task.findById(reqAuth.body._id);
+    user.currentTimer = task!.timerStarted ? task!._id : null;
+    await user.populate('currentTimer').execPopulate();
+    await user.save();
     res.send(user);
   } catch (e) {
     ErrorHandling(e, res, 400);

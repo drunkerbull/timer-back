@@ -9,7 +9,8 @@ export interface IUser {
   pass: string,
   online: string,
   avatar?: any,
-  haveAvatar: boolean
+  haveAvatar: boolean,
+  currentTimer: mongoose.Schema.Types.ObjectId | null
 }
 
 export interface IUserDoc extends Document, IUser {
@@ -56,6 +57,10 @@ const UserSchema: Schema = new mongoose.Schema({
   online: {
     type: String,
     default: null
+  },
+  currentTimer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
   },
   haveAvatar: {
     type: Boolean,

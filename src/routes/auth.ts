@@ -22,7 +22,7 @@ router.post('/api/login', async (req: Request, res: Response) => {
 
     const user: IUserDoc | null = await User.findByCredentials(reqPack);
     if (!user) throw new Error('User not found');
-
+    user.populate('currentTimer').execPopulate()
     const token: string = await user.generateAuthToken();
     res.send({user, token});
   } catch (e) {

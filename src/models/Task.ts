@@ -2,7 +2,7 @@ import mongoose, {Document, Model, model, Schema} from 'mongoose';
 
 export interface ITask {
   name: string,
-  worker:string,
+  worker: string,
   project: string,
   total: number,
   timerStarted: string
@@ -54,7 +54,7 @@ TaskSchema.statics.findByCredentials = async (params: any): Promise<ITaskDoc | n
   }
   return task;
 };
-TaskSchema.statics.findTaskById = async (reqAuth:any): Promise<ITaskDoc> => {
+TaskSchema.statics.findTaskById = async (reqAuth: any): Promise<ITaskDoc> => {
   const task: ITaskDoc | null = await Task.findById(reqAuth.params.id);
   if (!task) throw new Error('Task not found');
   if (task.owner.toString() !== reqAuth.user._id.toString()
@@ -63,8 +63,10 @@ TaskSchema.statics.findTaskById = async (reqAuth:any): Promise<ITaskDoc> => {
   }
   return task;
 };
+
 export interface ITaskModel extends Model<ITaskDoc> {
   findByCredentials(params: any): Promise<ITaskDoc>
+
   findTaskById(reqAuth: any): Promise<ITaskDoc>
 
 }

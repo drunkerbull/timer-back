@@ -22,7 +22,7 @@ const MessageSchema: Schema = new mongoose.Schema({
     required: true,
     ref: 'User'
   },
-  room:{
+  room: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Room'
   },

@@ -93,7 +93,9 @@ router.get('/api/projects/:id/tasks', auth, paramMongoId, async (req: Request, r
     await Project.populate(project.tasks, [{path: 'owner', model: 'User'}, {path: 'worker', model: 'User'}]);
 
     res.send(project.tasks);
-  } catch (e) {ErrorHandling(e, res, 400);}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 
 export interface IProjectWorker {
@@ -115,7 +117,9 @@ router.post('/api/projects/:id/worker', auth, paramMongoId, async (req: Request,
     await project.save();
 
     res.send(user);
-  } catch (e) {ErrorHandling(e, res, 400);}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 router.delete('/api/projects/:id/worker/:idworker', auth, paramMongoId, async (req: Request, res: Response) => {
   const reqPack = req as RequestAuth;
@@ -129,6 +133,8 @@ router.delete('/api/projects/:id/worker/:idworker', auth, paramMongoId, async (r
     await project.save();
 
     res.send({message: 'Worker deleted from project'});
-  } catch (e) {ErrorHandling(e, res, 400);}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 export default router;

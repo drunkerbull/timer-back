@@ -50,10 +50,12 @@ ProjectSchema.statics.findProjectById = async (reqPack: RequestAuth<IProjectWork
   const project: IProjectDoc | null = await Project.findById(reqPack.params.id);
   if (!project) throw new Error('Project not found');
   if (project.owner.toString() !== reqPack.user._id.toString()) throw new Error('You are not owner of project');
-  return project
+  return project;
 };
+
 export interface IProjectModel extends Model<IProjectDoc> {
   findByCredentials(params: any): Promise<IProjectDoc>
+
   findProjectById(reqPack: any): Promise<IProjectDoc>
 }
 

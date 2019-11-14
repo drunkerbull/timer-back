@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User, {IUserDoc} from '../models/User';
 
-const authSocket = async(socket: any, next: any)=>{
+const authSocket = async (socket: any, next: any) => {
   try {
     const token = socket.handshake.query ? socket.handshake.query.token : null;
     if (!token) {
@@ -14,12 +14,12 @@ const authSocket = async(socket: any, next: any)=>{
       throw new Error('Not found User');
     }
     socket.user = user;
-    user.online = socket.id
-    await user.save()
+    user.online = socket.id;
+    await user.save();
     next();
   } catch (e) {
-    console.log('socketerror',e);
+    console.log('socketerror', e);
     next(e);
   }
-}
-export default authSocket
+};
+export default authSocket;

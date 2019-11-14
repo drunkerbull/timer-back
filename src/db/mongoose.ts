@@ -17,9 +17,9 @@ class MongoDB {
         useUnifiedTopology: true
       });
       this.currentMongoose.set('useFindAndModify', false);
-      console.log('connected to db success')
+      console.log('connected to db success');
     } catch (e) {
-      console.log('ERROR: connect to db',e);
+      console.log('ERROR: connect to db', e);
     }
 
   }

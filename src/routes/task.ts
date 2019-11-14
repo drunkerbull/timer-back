@@ -28,7 +28,9 @@ router.post('/api/tasks', auth, async (req: Request, res: Response) => {
     await newTask.save();
 
     res.send(newTask);
-  } catch (e) {ErrorHandling(e, res, 400)}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 
 router.put('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Response) => {
@@ -40,7 +42,9 @@ router.put('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Respo
     await task.save();
 
     res.send(task);
-  } catch (e) {ErrorHandling(e, res, 400)}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 
 
@@ -51,7 +55,9 @@ router.delete('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Re
     await task.remove();
 
     res.send({message: 'Task removed'});
-  } catch (e) {ErrorHandling(e, res, 400)}
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
 });
 
 

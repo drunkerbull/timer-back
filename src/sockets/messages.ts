@@ -1,5 +1,5 @@
 import User, {IUserDoc} from '../models/User';
-import Room, {IRoom, IRoomDoc} from '../models/Room';
+import Room, {IRoomDoc} from '../models/Room';
 import Message, {IMessage, IMessageDoc} from '../models/Message';
 import * as mongoose from 'mongoose';
 
@@ -15,7 +15,9 @@ class Messages {
       try {
         const rooms: IRoomDoc[] = await this.userRooms(this.socket.user._id);
         this.socket.emit('onRooms', rooms);
-      } catch (e) {this.socket.emit('onRooms', {error: e})}
+      } catch (e) {
+        this.socket.emit('onRooms', {error: e});
+      }
     });
 
     this.socket.on('searchUsers', async (searchVal: string) => {
@@ -25,7 +27,9 @@ class Messages {
           '_id': {$ne: this.socket.user._id}
         });
         this.socket.emit('onSearchUsers', users);
-      } catch (e) {this.socket.emit('onSearchUsers', {error: e})}
+      } catch (e) {
+        this.socket.emit('onSearchUsers', {error: e});
+      }
     });
 
 
@@ -38,7 +42,9 @@ class Messages {
         });
         const correctRoom = room ? room : await this.createRoomForTwoUser(userTo);
         this.socket.emit('onRoom', correctRoom);
-      } catch (e) {this.socket.emit('onRoom', {error: e})}
+      } catch (e) {
+        this.socket.emit('onRoom', {error: e});
+      }
     });
 
 
@@ -55,7 +61,9 @@ class Messages {
         await room.populate('messages group').execPopulate();
         this.joinToRoom(room._id);
         this.socket.emit('onRoom', room);
-      } catch (e) {this.socket.emit('onRoom', {error: e})}
+      } catch (e) {
+        this.socket.emit('onRoom', {error: e});
+      }
 
     });
     this.socket.on('leaveAllRoom', () => {
@@ -64,7 +72,7 @@ class Messages {
     this.socket.on('message', async (message: IMessage) => {
       try {
         const currentRoom: IRoomDoc | null = await Room.findById(message.room);
-        if (!currentRoom) throw new Error('Room not found')
+        if (!currentRoom) throw new Error('Room not found');
         message.room = currentRoom._id;
         message.owner = this.socket.user._id;
 
@@ -78,7 +86,7 @@ class Messages {
         for (const user of users.notInRoom) {
           this.socket.to(user.online).emit('onNotiMessage', newMessage);
         }
-        currentRoom.read = users.inRoom.map((user:IUserDoc)=>user._id);
+        currentRoom.read = users.inRoom.map((user: IUserDoc) => user._id);
         await currentRoom.save();
         this.socket.to(newMessage.room).emit('onRoom', currentRoom);
       } catch (e) {
@@ -108,7 +116,7 @@ class Messages {
       .populate('group').exec();
   }
 
-  async usersWhoAreOnlineFromGroupRoom(room: IRoomDoc): Promise<{inRoom:IUserDoc[],notInRoom:IUserDoc[]}> {
+  async usersWhoAreOnlineFromGroupRoom(room: IRoomDoc): Promise<{ inRoom: IUserDoc[], notInRoom: IUserDoc[] }> {
     return new Promise((res, rej) => {
       this.io.in(room._id).clients((err: any, clients: string[]) => {
         if (err) return rej('error usersWhoAreOnlineButNotInRoom');

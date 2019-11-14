@@ -5,7 +5,7 @@ import ErrorHandling from '../error-handling';
 
 const paramMongoId = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.params.id || !validator.isMongoId(req.params.id)){
+    if (!req.params.id || !validator.isMongoId(req.params.id)) {
       throw new Error('Project id is not correct or not found');
     }
     next();

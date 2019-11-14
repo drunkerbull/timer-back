@@ -8,11 +8,13 @@ export interface IAuthLogin {
   email: string,
   pass: string
 }
+
 export interface IAuthRegister {
   email: string,
   nickname: string,
   pass: string
 }
+
 router.post('/api/login', async (req: Request, res: Response) => {
   const reqPack = req.body as IAuthLogin;
   try {

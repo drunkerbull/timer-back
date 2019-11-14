@@ -9,7 +9,7 @@ const router = Router();
 router.get('/api/statistics', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    let options:any = {'worker': reqAuth.user._id};
+    let options: any = {'worker': reqAuth.user._id};
     if (req.query.average) {
       options.createdAt = {
         '$gte': moment().subtract(1, req.query.average).startOf('day').toDate(),

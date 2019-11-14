@@ -25,7 +25,7 @@ io.use(authSocket);
 io.on('connection', (socket: any) => {
   console.log('some connect', socket.user._id, socket.user.nickname);
 
-  messagesSockets(io,socket);
+  messagesSockets(io, socket);
 
   socket.on('disconnect', async () => {
     socket.user.online = null;

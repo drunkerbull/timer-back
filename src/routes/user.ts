@@ -90,7 +90,7 @@ router.post('/api/users/me/avatar', auth, uploadAvatar.single('avatar'), async (
     ErrorHandling(e, res, 400);
   }
 });
-router.get('/api/users/:id/avatar',  async (req: Request, res: Response) => {
+router.get('/api/users/:id/avatar', async (req: Request, res: Response) => {
   try {
     const user = await User.findUserById(req.params.id);
 

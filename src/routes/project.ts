@@ -12,12 +12,16 @@ const router = Router();
 
 router.get('/api/projects', auth, async (req: Request, res: Response) => {
   const reqPack = req as RequestAuth;
+  let options: any = {limit: 16, skip: 0, sort: {createdAt: 'desc'}};
+  if (req.query.limit) options.limit = +req.query.limit;
+  if (req.query.skip) options.skip = +req.query.skip;
+  if (req.query.sort) options.sort.createdAt = req.query.sort;
+
+  let match: any = {workers: {$in: [reqPack.user._id]}};
+  if (req.query.type === 'owner') match.owner = reqPack.user._id;
+
   try {
-    const project: IProjectDoc[] = await Project.find(
-      {
-        'workers': {$in: [reqPack.user._id]}
-      }
-    ).populate('owner').exec();
+    const project: IProjectDoc[] = await Project.find(match, null, options).populate('owner').exec();
 
     res.send(project);
   } catch (e) {

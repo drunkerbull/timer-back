@@ -5,6 +5,7 @@ import auth, {RequestAuth} from '../middleware/auth';
 import paramMongoId from '../middleware/paramMongoId';
 import User, {IUserDoc} from '../models/User';
 import validator from 'validator';
+import Task, {ITaskDoc} from '../models/Task';
 
 
 const router = Router();
@@ -89,14 +90,21 @@ router.delete('/api/projects/:id', auth, paramMongoId, async (req: Request, res:
   }
 });
 router.get('/api/projects/:id/tasks', auth, paramMongoId, async (req: Request, res: Response) => {
+  const reqPack = req as RequestAuth;
+  let options: any = {limit: 16, skip: 0, sort: {createdAt: 'desc'}};
+  if (req.query.limit) options.limit = +req.query.limit;
+  if (req.query.skip) options.skip = +req.query.skip;
+  if (req.query.sort) options.sort.createdAt = req.query.sort;
+
+  let match: any = {project: {$in: [reqPack.params.id]}};
+  if (req.query.type === 'owner') match.owner = reqPack.user._id;
+  if (req.query.search) match.name = new RegExp(req.query.search, 'i');
   try {
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) throw new Error('Project not found');
 
-    await project.populate('tasks').execPopulate();
-    await Project.populate(project.tasks, [{path: 'owner', model: 'User'}, {path: 'worker', model: 'User'}]);
-
-    res.send(project.tasks);
+    const tasks: ITaskDoc[] | null = await Task.find(match, null, options).populate('owner worker').exec();
+    res.send(tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);
   }

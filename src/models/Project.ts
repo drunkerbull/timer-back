@@ -28,15 +28,13 @@ const ProjectSchema: Schema = new mongoose.Schema({
   workers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  tasks:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
   }]
 }, {
   timestamps: true
-});
-
-ProjectSchema.virtual('tasks', {
-  ref: 'Task',
-  localField: '_id',
-  foreignField: 'project'
 });
 
 ProjectSchema.statics.findByCredentials = async (params: any): Promise<IProjectDoc | null> => {

@@ -38,7 +38,7 @@ router.put('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Respo
   try {
     const task: ITaskDoc = await Task.findTaskById(reqAuth);
     task.timerStarted = reqAuth.body.timerStarted;
-    if (reqAuth.body.total) task.total = reqAuth.body.total;
+    if (reqAuth.body.total && reqAuth.body.total - task.total > 10000) task.total = reqAuth.body.total;
     await task.save();
 
     res.send(task);
@@ -52,7 +52,7 @@ router.delete('/api/tasks/:id', auth, paramMongoId, async (req: Request, res: Re
   const reqAuth = req as RequestAuth;
   try {
     const task: ITaskDoc = await Task.findTaskById(reqAuth);
-    if(task.timerStarted){
+    if (task.timerStarted) {
       throw new Error('You cant delete task if timer started');
     }
     await task.remove();

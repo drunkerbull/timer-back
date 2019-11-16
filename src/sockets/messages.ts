@@ -58,7 +58,8 @@ class Messages {
           room.read.push(this.socket.user._id);
         }
         await room.save();
-        await room.populate('messages group').execPopulate();
+        await room.populate('group').execPopulate();
+        await room.populate({path: 'messages', options: {limit: 15, sort: {createdAt: 'desc'}}}).execPopulate();
         this.joinToRoom(room._id);
         this.socket.emit('onRoom', room);
       } catch (e) {
@@ -68,6 +69,18 @@ class Messages {
     });
     this.socket.on('leaveAllRoom', () => {
       this.leaveAllRooms();
+    });
+    this.socket.on('loadMoreMessages', async ({room, options}: { room: IRoomDoc, options: any }) => {
+      try {
+        const currentRoom: IRoomDoc | null = await Room.findById(room);
+        if (!currentRoom) throw new Error('Room not found');
+
+        let stableOptions = {limit: 15, sort: {createdAt: 'desc'}};
+        await currentRoom.populate({path: 'messages', options:{...stableOptions,...options}}).execPopulate();
+        this.socket.emit('onLoadMoreMessages', currentRoom);
+      } catch (e) {
+        this.socket.emit('onLoadMoreMessages', {error: e});
+      }
     });
     this.socket.on('message', async (message: IMessage) => {
       try {
@@ -81,13 +94,15 @@ class Messages {
         await newMessage.populate('owner').execPopulate();
         currentRoom.messages.push(newMessage._id);
 
-        await currentRoom.populate('messages group').execPopulate();
+        await currentRoom.populate('group').execPopulate();
+
         const users = await this.usersWhoAreOnlineFromGroupRoom(currentRoom);
         for (const user of users.notInRoom) {
           this.socket.to(user.online).emit('onNotiMessage', newMessage);
         }
         currentRoom.read = users.inRoom.map((user: IUserDoc) => user._id);
         await currentRoom.save();
+        await currentRoom.populate({path: 'messages', options: {limit: 15, sort: {createdAt: 'desc'}}}).execPopulate();
         this.socket.to(newMessage.room).emit('onRoom', currentRoom);
       } catch (e) {
         this.socket.emit('onRoom', {error: e});

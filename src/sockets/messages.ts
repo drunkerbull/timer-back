@@ -19,7 +19,26 @@ class Messages {
         this.socket.emit('onRooms', {error: e});
       }
     });
+    this.socket.on('changeMessage', async (message: IMessageDoc) => {
+      try {
+        const newMessage: IMessageDoc | null = await Message.findById(message._id);
+        if (!newMessage) throw new Error('Message not found');
 
+        newMessage.text = message.text;
+        await newMessage.save();
+      } catch (e) {
+        this.socket.emit('onRooms', {error: e});
+      }
+    });
+    this.socket.on('deleteMessage', async (message: IMessageDoc) => {
+      try {
+        const newMessage: IMessageDoc | null = await Message.findById(message._id);
+        if (!newMessage) throw new Error('Message not found');
+        await newMessage.remove();
+      } catch (e) {
+        this.socket.emit('onRooms', {error: e});
+      }
+    });
     this.socket.on('searchUsers', async (searchVal: string) => {
       try {
         const users: IUserDoc[] = await User.find({
@@ -76,13 +95,13 @@ class Messages {
         if (!currentRoom) throw new Error('Room not found');
 
         let stableOptions = {limit: 15, sort: {createdAt: 'desc'}};
-        await currentRoom.populate({path: 'messages', options:{...stableOptions,...options}}).execPopulate();
+        await currentRoom.populate({path: 'messages', options: {...stableOptions, ...options}}).execPopulate();
         this.socket.emit('onLoadMoreMessages', currentRoom);
       } catch (e) {
         this.socket.emit('onLoadMoreMessages', {error: e});
       }
     });
-    this.socket.on('message', async (message: IMessage) => {
+    this.socket.on('message', async (message: IMessage, cb: any) => {
       try {
         const currentRoom: IRoomDoc | null = await Room.findById(message.room);
         if (!currentRoom) throw new Error('Room not found');
@@ -95,7 +114,6 @@ class Messages {
         currentRoom.messages.push(newMessage._id);
 
         await currentRoom.populate('group').execPopulate();
-
         const users = await this.usersWhoAreOnlineFromGroupRoom(currentRoom);
         for (const user of users.notInRoom) {
           this.socket.to(user.online).emit('onNotiMessage', newMessage);
@@ -103,6 +121,7 @@ class Messages {
         currentRoom.read = users.inRoom.map((user: IUserDoc) => user._id);
         await currentRoom.save();
         await currentRoom.populate({path: 'messages', options: {limit: 15, sort: {createdAt: 'desc'}}}).execPopulate();
+        if (cb) cb(newMessage);
         this.socket.to(newMessage.room).emit('onRoom', currentRoom);
       } catch (e) {
         this.socket.emit('onRoom', {error: e});

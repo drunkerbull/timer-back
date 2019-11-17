@@ -22,7 +22,7 @@ router.post('/api/login', async (req: Request, res: Response) => {
 
     const user: IUserDoc | null = await User.findByCredentials(reqPack);
     if (!user) throw new Error('User not found');
-    user.populate('currentTimer').execPopulate()
+    user.populate('currentTimer').execPopulate();
     const token: string = await user.generateAuthToken();
     res.send({user, token});
   } catch (e) {
@@ -33,7 +33,8 @@ router.post('/api/register', async (req: Request, res: Response) => {
   const reqPack = req.body as IAuthRegister;
   try {
     if (!reqPack.email || !reqPack.nickname || !reqPack.pass) throw new Error('add all info');
-
+    reqPack.email.toLowerCase();
+    reqPack.nickname.trim();
     const user: IUserDoc | null = await User.findByCredentials(reqPack);
     if (user) throw new Error('User exist');
 

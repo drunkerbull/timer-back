@@ -27,7 +27,8 @@ router.get('/api/users/me', auth, async (req: Request, res: Response) => {
 router.put('/api/users/me', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<IUser>;
   const updates = Object.keys(reqAuth.body);
-  const allowedUpdates = ['name', 'surname', 'nickname', 'haveAvatar'];
+  const allowedUpdates = ['name', 'surname', 'nickname', 'haveAvatar',
+    'allCanAddMeToProject', 'allCanWriteMe', 'disableNotifications'];
   const isValidOperation = updates.every((update: string) => allowedUpdates.includes(update));
   try {
     if (!isValidOperation) throw new Error('Invalid data');

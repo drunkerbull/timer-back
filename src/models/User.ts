@@ -66,6 +66,18 @@ const UserSchema: Schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  allCanAddMeToProject:{
+    type: Boolean,
+    default:false
+  },
+  allCanWriteMe:{
+    type: Boolean,
+    default: false
+  },
+  disableNotifications:{
+    type: Boolean,
+    default: false
+  },
   avatar: {
     type: Buffer
   },

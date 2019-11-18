@@ -28,11 +28,14 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<IUser>;
   const updates = Object.keys(reqAuth.body);
   const allowedUpdates = ['name', 'surname', 'nickname', 'haveAvatar',
-    'allCanAddMeToProject', 'allCanWriteMe', 'disableNotifications'];
+    'blockEveryoneWhoWantAddMeToProject', 'blockEveryoneWhoWantWriteMe', 'disableNotifications'];
   const isValidOperation = updates.every((update: string) => allowedUpdates.includes(update));
   try {
     if (!isValidOperation) throw new Error('Invalid data');
-
+    if (reqAuth.body.nickname) {
+      const user: IUserDoc | null = await User.findOne({nickname: reqAuth.body.nickname});
+      if (user) throw new Error('User with this  nickname exist');
+    }
     Object.assign(reqAuth.user, reqAuth.body);
     await reqAuth.user.save();
 

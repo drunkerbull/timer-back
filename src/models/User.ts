@@ -18,7 +18,10 @@ export interface IUserDoc extends Document, IUser {
   __v: number,
   name: string,
   surname: string,
-
+  blackList:mongoose.Schema.Types.ObjectId[],
+  blockEveryoneWhoWantAddMeToProject:boolean,
+  blockEveryoneWhoWantWriteMe:boolean,
+  disableNotifications:boolean,
   tokens: {
     token: string
   }[]
@@ -66,11 +69,11 @@ const UserSchema: Schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  allCanAddMeToProject:{
+  blockEveryoneWhoWantAddMeToProject:{
     type: Boolean,
     default:false
   },
-  allCanWriteMe:{
+  blockEveryoneWhoWantWriteMe:{
     type: Boolean,
     default: false
   },
@@ -78,6 +81,10 @@ const UserSchema: Schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  blackList:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   avatar: {
     type: Buffer
   },

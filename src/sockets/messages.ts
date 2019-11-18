@@ -16,7 +16,7 @@ class Messages {
         const rooms: IRoomDoc[] = await this.userRooms(this.socket.user._id);
         this.socket.emit('onRooms', rooms);
       } catch (e) {
-        this.socket.emit('onRooms', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
     this.socket.on('changeMessage', async (message: IMessageDoc) => {
@@ -27,7 +27,7 @@ class Messages {
         newMessage.text = message.text;
         await newMessage.save();
       } catch (e) {
-        this.socket.emit('onRooms', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
     this.socket.on('deleteMessage', async (message: IMessageDoc) => {
@@ -36,18 +36,18 @@ class Messages {
         if (!newMessage) throw new Error('Message not found');
         await newMessage.remove();
       } catch (e) {
-        this.socket.emit('onRooms', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
     this.socket.on('searchUsers', async (searchVal: string) => {
       try {
         const users: IUserDoc[] = await User.find({
-          'email': new RegExp(searchVal, 'i'),
+          'nickname': new RegExp(searchVal, 'i'),
           '_id': {$ne: this.socket.user._id}
         });
         this.socket.emit('onSearchUsers', users);
       } catch (e) {
-        this.socket.emit('onSearchUsers', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
 
@@ -55,6 +55,8 @@ class Messages {
     this.socket.on('selectOrCreateRoom', async (userTo: IUserDoc) => {
       try {
         const user: IUserDoc | null = await User.findUserById(userTo._id);
+        if (user.blackList.includes(this.socket.user._id)) throw new Error('This user add you to black list');
+        if (user.blockEveryoneWhoWantWriteMe) throw new Error('This user has blocked messages from strangers.');
 
         const room: IRoomDoc | null = await Room.findOne({
           $and: [{'group': user._id}, {'group': this.socket.user._id}]
@@ -62,7 +64,7 @@ class Messages {
         const correctRoom = room ? room : await this.createRoomForTwoUser(userTo);
         this.socket.emit('onRoom', correctRoom);
       } catch (e) {
-        this.socket.emit('onRoom', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
 
@@ -82,7 +84,7 @@ class Messages {
         this.joinToRoom(room._id);
         this.socket.emit('onRoom', room);
       } catch (e) {
-        this.socket.emit('onRoom', {error: e});
+        this.socket.emit('catchError', e.message);
       }
 
     });
@@ -98,7 +100,7 @@ class Messages {
         await currentRoom.populate({path: 'messages', options: {...stableOptions, ...options}}).execPopulate();
         this.socket.emit('onLoadMoreMessages', currentRoom);
       } catch (e) {
-        this.socket.emit('onLoadMoreMessages', {error: e});
+        this.socket.emit('catchError', e.message);
       }
     });
     this.socket.on('message', async (message: IMessage, cb: any) => {
@@ -124,7 +126,7 @@ class Messages {
         if (cb) cb(newMessage);
         this.socket.to(newMessage.room).emit('onRoom', currentRoom);
       } catch (e) {
-        this.socket.emit('onRoom', {error: e});
+        this.socket.emit('catchError', e.message);
       }
 
     });

@@ -37,7 +37,7 @@ router.post('/api/register', async (req: Request, res: Response) => {
     reqPack.nickname.trim();
     const user: IUserDoc | null = await User.findByCredentials(reqPack);
     if (user) throw new Error('User exist');
-
+    if (user && user!.nickname === reqPack.nickname) throw new Error('User exist');
     const newUser: IUserDoc = new User(reqPack);
     await newUser.save();
     res.send(newUser);

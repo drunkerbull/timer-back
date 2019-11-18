@@ -5,6 +5,7 @@ import auth, {RequestAuth} from '../middleware/auth';
 import Task, {ITask, ITaskDoc} from '../models/Task';
 import paramMongoId from '../middleware/paramMongoId';
 import mongoose from 'mongoose';
+import User, {IUserDoc} from '../models/User';
 
 const router = Router();
 
@@ -22,6 +23,10 @@ router.post('/api/tasks', auth, async (req: Request, res: Response) => {
 
     const task: ITaskDoc | null = await Task.findByCredentials({name: req.body.name});
     if (task) throw new Error('Task exist');
+
+    const user: IUserDoc | null = await User.findUserById(reqAuth.body.worker);
+    if (user.blockEveryoneWhoWantAddMeToProject) throw new Error('This user has blocked the ability to add it to projects');
+    if (user.blackList.includes(reqAuth.user._id)) throw new Error('This user add you to black list');
 
     const pack = {...req.body, owner};
     const newTask: ITaskDoc = new Task(pack);

@@ -4,7 +4,6 @@ import Project, {IProject, IProjectDoc} from '../models/Project';
 import auth, {RequestAuth} from '../middleware/auth';
 import paramMongoId from '../middleware/paramMongoId';
 import User, {IUserDoc} from '../models/User';
-import validator from 'validator';
 import Task, {ITaskDoc} from '../models/Task';
 
 
@@ -110,20 +109,18 @@ router.get('/api/projects/:id/tasks', auth, paramMongoId, async (req: Request, r
   }
 });
 
-export interface IProjectWorker {
-  email: string
-}
 
 router.post('/api/projects/:id/worker', auth, paramMongoId, async (req: Request, res: Response) => {
-  const reqPack = req as RequestAuth<IProjectWorker>;
+  const reqPack = req as RequestAuth<{ nickname: string }>;
   try {
-    if (!reqPack.body.email) throw new Error('Not found email');
-    if (!validator.isEmail(reqPack.body.email)) throw new Error('It is not email');
+    if (!reqPack.body.nickname) throw new Error('Not found nickname');
 
     const project: IProjectDoc = await Project.findProjectById(reqPack);
 
-    const user: IUserDoc | null = await User.findOne({email: reqPack.body.email});
+    const user: IUserDoc | null = await User.findOne({nickname: reqPack.body.nickname});
     if (!user) throw new Error('User not found');
+    if (user.blockEveryoneWhoWantAddMeToProject) throw new Error('This user has blocked the ability to add it to projects');
+    if (user.blackList.includes(reqPack.user._id)) throw new Error('This user add you to black list');
 
     project.workers.push(user._id);
     await project.save();

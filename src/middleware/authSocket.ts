@@ -8,7 +8,6 @@ const authSocket = async (socket: any, next: any) => {
       throw new Error('Not found Token');
     }
     const decoded: any = jwt.verify(token, 'thisissecret');
-    socket.decoded = decoded;
     const user: IUserDoc | null = await User.findOne({_id: decoded._id, 'tokens.token': token});
     if (!user) {
       throw new Error('Not found User');
@@ -18,7 +17,6 @@ const authSocket = async (socket: any, next: any) => {
     await user.save();
     next();
   } catch (e) {
-    console.log('socketerror', e);
     next(e);
   }
 };

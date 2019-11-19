@@ -5,6 +5,7 @@ import auth, {RequestAuth} from '../middleware/auth';
 import multer from 'multer';
 import sharp from 'sharp';
 import Task, {ITaskDoc} from '../models/Task';
+import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth<IUser>;
   const updates = Object.keys(reqAuth.body);
   const allowedUpdates = ['name', 'surname', 'nickname', 'haveAvatar',
-    'blockEveryoneWhoWantAddMeToProject', 'blockEveryoneWhoWantWriteMe', 'disableNotifications'];
+    'blockEveryoneWhoWantAddMeToProject', 'blockEveryoneWhoWantWriteMe', 'disableNotifications', 'disableNotifications'];
   const isValidOperation = updates.every((update: string) => allowedUpdates.includes(update));
   try {
     if (!isValidOperation) throw new Error('Invalid data');
@@ -119,6 +120,48 @@ router.get('/api/users/:id/avatar', async (req: Request, res: Response) => {
 
     res.set('Content-Type', 'image/png');
     res.send(user.avatar);
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
+});
+
+
+router.get('/api/blacklist', auth, async (req: Request, res: Response) => {
+  const reqAuth = req as RequestAuth;
+  try {
+    await reqAuth.user.populate('blackList').execPopulate();
+    res.send(reqAuth.user);
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
+});
+router.post('/api/blacklist', auth, async (req: Request, res: Response) => {
+  const reqAuth = req as RequestAuth<{ nickname: string }>;
+  try {
+    const user: IUserDoc | null = await User.findOne({nickname: reqAuth.body.nickname});
+    if (!user) throw new Error('Not found User');
+    if (user && user._id.toString() === reqAuth.user._id.toString()) throw new Error('You cannot blacklist yourself');
+
+    const userExist = reqAuth.user.checkBlackList(user._id);
+    if (!userExist) throw new Error('This user is always in blackList');
+
+    reqAuth.user.blackList.push(user._id);
+    await reqAuth.user.save();
+
+    res.send(user);
+  } catch (e) {
+    ErrorHandling(e, res, 400);
+  }
+});
+router.delete('/api/blacklist/:id', auth, async (req: Request, res: Response) => {
+  const reqAuth = req as RequestAuth;
+  try {
+    const index = reqAuth.user.checkBlackList(reqAuth.params.id);
+
+    reqAuth.user.blackList.splice(index, 1);
+    await reqAuth.user.save();
+
+    res.send({message: 'User removed from black list'});
   } catch (e) {
     ErrorHandling(e, res, 400);
   }

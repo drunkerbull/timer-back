@@ -18,15 +18,17 @@ export interface IUserDoc extends Document, IUser {
   __v: number,
   name: string,
   surname: string,
-  blackList:mongoose.Schema.Types.ObjectId[],
-  blockEveryoneWhoWantAddMeToProject:boolean,
-  blockEveryoneWhoWantWriteMe:boolean,
-  disableNotifications:boolean,
+  blackList: mongoose.Schema.Types.ObjectId[],
+  blockEveryoneWhoWantAddMeToProject: boolean,
+  blockEveryoneWhoWantWriteMe: boolean,
+  disableNotifications: boolean,
   tokens: {
     token: string
   }[]
 
   checkPass(pass: string): boolean;
+
+  checkBlackList(id: mongoose.Schema.Types.ObjectId | string): number;
 
   generateAuthToken(): string;
 }
@@ -69,19 +71,19 @@ const UserSchema: Schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  blockEveryoneWhoWantAddMeToProject:{
-    type: Boolean,
-    default:false
-  },
-  blockEveryoneWhoWantWriteMe:{
+  blockEveryoneWhoWantAddMeToProject: {
     type: Boolean,
     default: false
   },
-  disableNotifications:{
+  blockEveryoneWhoWantWriteMe: {
     type: Boolean,
     default: false
   },
-  blackList:[{
+  disableNotifications: {
+    type: Boolean,
+    default: false
+  },
+  blackList: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
@@ -112,6 +114,9 @@ UserSchema.methods.checkPass = async function (currentPass: string) {
     throw new Error('Invalid password data');
   }
   return isMatch;
+};
+UserSchema.methods.checkBlackList = async function (id: mongoose.Schema.Types.ObjectId | string) {
+  return this.blackList.findIndex((_id: mongoose.Schema.Types.ObjectId) => _id.toString() === id.toString());
 };
 UserSchema.methods.toJSON = function () {
   const user = this;

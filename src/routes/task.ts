@@ -26,7 +26,7 @@ router.post('/api/tasks', auth, async (req: Request, res: Response) => {
 
     const user: IUserDoc | null = await User.findUserById(reqAuth.body.worker);
     if (user.blockEveryoneWhoWantAddMeToProject) throw new Error('This user has blocked the ability to add it to projects');
-    if (user.blackList.includes(reqAuth.user._id)) throw new Error('This user add you to black list');
+    if (user.checkBlackList(reqAuth.user._id)) throw new Error('This user add you to black list');
 
     const pack = {...req.body, owner};
     const newTask: ITaskDoc = new Task(pack);

@@ -51,7 +51,6 @@ class Messages {
       }
     });
 
-
     this.socket.on('selectOrCreateRoom', async (userTo: IUserDoc) => {
       try {
         const user: IUserDoc | null = await User.findUserById(userTo._id);
@@ -67,7 +66,6 @@ class Messages {
         this.socket.emit('catchError', e.message);
       }
     });
-
 
     this.socket.on('selectRoom', async (selectedRoom: IRoomDoc) => {
       try {

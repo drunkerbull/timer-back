@@ -10,7 +10,7 @@ const router = Router();
 router.get('/api/statistics/worker', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    let options: any = {'worker': reqAuth.user._id};
+    let options: any = {'worker': reqAuth.user._id, 'total': {$gt: 10}};
     if (req.query.average) {
       options.createdAt = {
         '$gte': moment().subtract(1, req.query.average).startOf('day').toDate(),
@@ -27,7 +27,7 @@ router.get('/api/statistics/worker', auth, async (req: Request, res: Response) =
 router.get('/api/statistics/owner', auth, async (req: Request, res: Response) => {
   const reqAuth = req as RequestAuth;
   try {
-    let options: any = {'owner': reqAuth.user._id};
+    let options: any = {'owner': reqAuth.user._id, 'total': {$gt: 10}};
     if (req.query.average) {
       options.createdAt = {
         '$gte': moment().subtract(1, req.query.average).startOf('day').toDate(),
@@ -48,7 +48,7 @@ router.get('/api/statistics/owner-project', auth, async (req: Request, res: Resp
     const projects: IProjectDoc[] = await Project.find(ownerProject);
     const projectsIds = projects.map((project) => project._id);
 
-    let options: any = {'project': {'$in': projectsIds}};
+    let options: any = {'project': {'$in': projectsIds}, 'total': {$gt: 10}};
     if (req.query.average) {
       options.createdAt = {
         '$gte': moment().subtract(1, req.query.average).startOf('day').toDate(),

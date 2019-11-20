@@ -11,7 +11,8 @@ export interface ITask {
 
 export interface ITaskDoc extends Document, ITask {
   _id: mongoose.Schema.Types.ObjectId,
-  owner: mongoose.Schema.Types.ObjectId
+  owner: mongoose.Schema.Types.ObjectId,
+  times: mongoose.Schema.Types.ObjectId[],
   __v: number,
 }
 
@@ -35,6 +36,10 @@ const TaskSchema: Schema = new mongoose.Schema({
     required: true,
     ref: 'Project'
   },
+  times: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Time'
+  }],
   total: {
     type: Number,
     default: 0

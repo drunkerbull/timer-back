@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import DB from './db/mongoose';
 import authRouter from './routes/auth';
 import userRouter from './routes/user';
+import timeRouter from './routes/time';
 import taskRouter from './routes/task';
 import statisticsRouter from './routes/statistics';
 import projectRouter from './routes/project';
@@ -41,6 +42,7 @@ app.use(userRouter);
 app.use(taskRouter);
 app.use(statisticsRouter);
 app.use(projectRouter);
+app.use(timeRouter);
 
 app.use(express.static(__dirname + '/views'));
 

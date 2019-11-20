@@ -102,7 +102,10 @@ router.get('/api/projects/:id/tasks', auth, paramMongoId, async (req: Request, r
     const project: IProjectDoc | null = await Project.findById(req.params.id);
     if (!project) throw new Error('Project not found');
 
-    const tasks: ITaskDoc[] | null = await Task.find(match, null, options).populate('owner worker').exec();
+    const tasks: ITaskDoc[] | null = await Task.find(match, null, options).populate('owner worker').populate({
+        path: 'times',
+        model: 'Time'
+      }).exec();
     res.send(tasks);
   } catch (e) {
     ErrorHandling(e, res, 400);

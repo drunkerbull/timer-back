@@ -33,7 +33,7 @@ router.put('/api/users/me', auth, async (req: Request, res: Response) => {
   const isValidOperation = updates.every((update: string) => allowedUpdates.includes(update));
   try {
     if (!isValidOperation) throw new Error('Invalid data');
-    if (reqAuth.body.nickname) {
+    if (reqAuth.user.nickname !== reqAuth.body.nickname) {
       const user: IUserDoc | null = await User.findOne({nickname: reqAuth.body.nickname});
       if (user) throw new Error('User with this  nickname exist');
     }

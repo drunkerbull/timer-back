@@ -115,7 +115,7 @@ UserSchema.methods.checkPass = async function (currentPass: string) {
   }
   return isMatch;
 };
-UserSchema.methods.checkBlackList = async function (id: mongoose.Schema.Types.ObjectId | string) {
+UserSchema.methods.checkBlackList =  function (id: mongoose.Schema.Types.ObjectId | string) {
   return this.blackList.findIndex((_id: mongoose.Schema.Types.ObjectId) => _id.toString() === id.toString());
 };
 UserSchema.methods.toJSON = function () {

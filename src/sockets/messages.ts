@@ -55,7 +55,7 @@ class Messages {
     this.socket.on('selectOrCreateRoom', async (userTo: IUserDoc) => {
       try {
         const user: IUserDoc | null = await User.findUserById(userTo._id);
-        if (user.checkBlackList(this.socket.user._id)) throw new Error('This user add you to black list');
+        if (!user.checkBlackList(this.socket.user._id)) throw new Error('This user add you to black list');
         if (user.blockEveryoneWhoWantWriteMe) throw new Error('This user has blocked messages from strangers.');
 
         const room: IRoomDoc | null = await Room.findOne({

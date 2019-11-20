@@ -120,7 +120,7 @@ router.post('/api/projects/:id/worker', auth, paramMongoId, async (req: Request,
     const user: IUserDoc | null = await User.findOne({nickname: reqPack.body.nickname});
     if (!user) throw new Error('User not found');
     if (user.blockEveryoneWhoWantAddMeToProject) throw new Error('This user has blocked the ability to add it to projects');
-    if (user.checkBlackList(reqPack.user._id)) throw new Error('This user add you to black list');
+    if (!user.checkBlackList(reqPack.user._id)) throw new Error('This user add you to black list');
 
     project.workers.push(user._id);
     await project.save();

@@ -44,8 +44,8 @@ router.put('/api/time/:id', auth, async (req: Request, res: Response) => {
     const time: ITimeDoc | null = await Time.findById(reqAuth.params.id);
     if (!time) throw new Error('Time not found');
     if (time.owner.toString() !== reqAuth.user.id) throw new Error('You are not the owner of this time');
-
     Object.assign(time, reqAuth.body);
+
     if (time.start && time.end) {
       time.total = moment(time.end).diff(moment(time.start));
     }
@@ -57,8 +57,8 @@ router.put('/api/time/:id', auth, async (req: Request, res: Response) => {
     }).exec();
     if (!task) throw new Error('Task not found, cant save total time');
 
-    const times = task.times.map((time:any) => time.total);
-    task.total = times.reduce((acc, val) =>acc + val);
+    const times = task.times.map((time: any) => time.total);
+    task.total = times.reduce((acc, val) => acc + val);
     await task.save();
     res.send(time);
   } catch (e) {

@@ -5,7 +5,6 @@ import auth, {RequestAuth} from '../middleware/auth';
 import multer from 'multer';
 import sharp from 'sharp';
 import Task, {ITaskDoc} from '../models/Task';
-import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -50,11 +49,11 @@ router.post('/api/users/me/timer', auth, async (req: Request, res: Response) => 
   const reqAuth = req as RequestAuth<ITaskDoc>;
   try {
     const task: ITaskDoc | null = await Task.findById(reqAuth.body._id);
-    reqAuth.user.currentTimer = task!.timerStarted ? task!._id : null;
+    reqAuth.user.currentTimer = task!._id;
     if (reqAuth.user.currentTimer) {
       await reqAuth.user.populate('currentTimer').execPopulate();
+      await reqAuth.user.save();
     }
-    await reqAuth.user.save();
     res.send(reqAuth.user);
   } catch (e) {
     ErrorHandling(e, res, 400);

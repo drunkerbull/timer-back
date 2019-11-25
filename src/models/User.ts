@@ -65,7 +65,7 @@ const UserSchema: Schema = new mongoose.Schema({
   },
   currentTimer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Task'
+    ref: 'Time'
   },
   haveAvatar: {
     type: Boolean,

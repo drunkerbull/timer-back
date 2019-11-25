@@ -5,7 +5,6 @@ export interface ITask {
   worker: string,
   project: string,
   total: number,
-  timerStarted: string
 
 }
 
@@ -43,10 +42,6 @@ const TaskSchema: Schema = new mongoose.Schema({
   total: {
     type: Number,
     default: 0
-  },
-  timerStarted: {
-    type: String,
-    default: ''
   }
 }, {
   timestamps: true

@@ -51,6 +51,13 @@ router.put('/api/time/:id', auth, async (req: Request, res: Response) => {
     }
     await time.save();
 
+    // @ts-ignore
+    if (reqAuth.user.currentTimer && reqAuth.user.currentTimer._id === time._id) {
+      reqAuth.user.currentTimer = null;
+      await reqAuth.user.save();
+    }
+
+
     const task: ITaskDoc | null = await Task.findById(time.task).populate({
       path: 'times',
       model: 'Time'

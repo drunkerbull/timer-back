@@ -52,7 +52,7 @@ router.put('/api/time/:id', auth, async (req: Request, res: Response) => {
     await time.save();
 
     // @ts-ignore
-    if (reqAuth.user.currentTimer && reqAuth.user.currentTimer._id === time._id) {
+    if (reqAuth.user.currentTimer && reqAuth.user.currentTimer._id.toString() === time._id.toString()) {
       reqAuth.user.currentTimer = null;
       await reqAuth.user.save();
     }

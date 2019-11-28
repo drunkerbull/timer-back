@@ -13,7 +13,7 @@ router.post('/api/time', auth, async (req: Request, res: Response) => {
   try {
     const pack = {
       ...reqAuth.body,
-      owner: reqAuth.user._id
+      worker: reqAuth.user._id
     };
 
     const task: ITaskDoc | null = await Task.findById(pack.task);
@@ -43,7 +43,7 @@ router.put('/api/time/:id', auth, async (req: Request, res: Response) => {
 
     const time: ITimeDoc | null = await Time.findById(reqAuth.params.id);
     if (!time) throw new Error('Time not found');
-    if (time.owner.toString() !== reqAuth.user.id) throw new Error('You are not the owner of this time');
+    if (time.worker.toString() !== reqAuth.user.id) throw new Error('You are not the worker of this time');
     Object.assign(time, reqAuth.body);
 
     if (time.start && time.end) {

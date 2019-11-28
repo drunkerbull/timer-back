@@ -9,6 +9,8 @@ export interface ITime {
 export interface ITimeDoc extends Document, ITime {
   _id: mongoose.Schema.Types.ObjectId,
   owner: mongoose.Schema.Types.ObjectId,
+  worker:mongoose.Schema.Types.ObjectId,
+  project:mongoose.Schema.Types.ObjectId,
   total: number,
   __v: number
 }
@@ -16,14 +18,26 @@ export interface ITimeDoc extends Document, ITime {
 const TimeSchema: Schema = new mongoose.Schema({
   task: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: 'Task'
+  },
+  project: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'Project'
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: 'User'
+  },
+  worker: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User'
   },
   start: {
-    type: String,
+    type: Date,
     required: true
   },
   total: {
@@ -31,7 +45,7 @@ const TimeSchema: Schema = new mongoose.Schema({
     default: 0
   },
   end: {
-    type: String,
+    type: Date,
     default: null
   }
 }, {
